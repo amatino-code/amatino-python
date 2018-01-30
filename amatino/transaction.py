@@ -1,0 +1,69 @@
+"""
+Amatino API Python Bindings
+Transaction Module
+Author: hugh@blinkybeach.com
+"""
+from datetime import datetime
+from amatino.global_unit import GlobalUnit
+from amatino.custom_unit import CustomUnit
+from amatino._private._new_transaction_arguments import _NewTransactionArguments
+
+class Transaction:
+    """
+    A Transaction records an exchange of value between or within
+    one ore more Accounts. Initialise a Transaction object in one
+    of two ways:
+
+    1. An existing transaction, by supplying an integer transaction id. In
+       this case, supply only the transaction_id keyword argument. For
+       example, Transaction(transaction_id=93243532)
+
+    2. A new transaction, by supplying data describing the transaction. In
+       this case, supply all keyword arguments except for transaction_id.
+
+    """
+    _INVALID_EXISTING_MESSAGE = """
+        Invalid arguments for the initialisation of an existing Transaction
+    """
+
+
+    def __init__(
+        transaction_id: int = None,
+        transaction_time: datetime = None,
+        description: str = None,
+        global_unit: GlobalUnit = None,
+        custom_unit: CustomUnit = None,
+        entries: [Entry] = None,
+        completion_handler = None,
+        defer: bool = False
+    ):
+
+        self._new_arguments = None
+        self._existing_attributes = None
+    
+        if transaction_id is None:
+            self._new_arguments = _NewTransactionArguments(
+                transaction_time=transaction_time,
+                description=description,
+                global_unit=global_unit,
+                custom_unit=custom_unit,
+                entries=entries
+            )
+
+        if transaction_id is not None:
+            valid = self._existing_arguments_valid():
+
+            if valid:
+                self._retrieve()
+            else:
+                raise RuntimeError(self._INVALID_EXISTING_MESSAGE)
+
+        return
+
+
+
+    def _create(self) -> None:
+        pass
+
+    def _retrieve(self) -> None:
+        pass
