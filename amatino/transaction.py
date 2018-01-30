@@ -6,7 +6,8 @@ Author: hugh@blinkybeach.com
 from datetime import datetime
 from amatino.global_unit import GlobalUnit
 from amatino.custom_unit import CustomUnit
-from amatino._private._new_transaction_arguments import _NewTransactionArguments
+from amatino.entry import Entry
+from amatino._internal._new_transaction_arguments import _NewTransactionArguments
 
 class Transaction:
     """
@@ -28,19 +29,18 @@ class Transaction:
 
 
     def __init__(
-        transaction_id: int = None,
-        transaction_time: datetime = None,
-        description: str = None,
-        global_unit: GlobalUnit = None,
-        custom_unit: CustomUnit = None,
-        entries: [Entry] = None,
-        completion_handler = None,
-        defer: bool = False
+            self,
+            transaction_id: int = None,
+            transaction_time: datetime = None,
+            description: str = None,
+            global_unit: GlobalUnit = None,
+            custom_unit: CustomUnit = None,
+            entries: [Entry] = None
     ):
 
         self._new_arguments = None
         self._existing_attributes = None
-    
+
         if transaction_id is None:
             self._new_arguments = _NewTransactionArguments(
                 transaction_time=transaction_time,
@@ -50,20 +50,16 @@ class Transaction:
                 entries=entries
             )
 
-        if transaction_id is not None:
-            valid = self._existing_arguments_valid():
-
-            if valid:
-                self._retrieve()
-            else:
-                raise RuntimeError(self._INVALID_EXISTING_MESSAGE)
-
         return
 
-
-
     def _create(self) -> None:
-        pass
+        raise NotImplementedError
 
     def _retrieve(self) -> None:
-        pass
+        raise NotImplementedError
+
+    def update(self) -> None:
+        raise NotImplementedError
+
+    def restore(self) -> None:
+        raise NotImplementedError
