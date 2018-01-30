@@ -14,3 +14,15 @@ class Entry:
 
     def __init__(self):
         pass
+
+    def _create(self) -> None:
+        raise NotImplementedError
+
+    def _retrieve(self) -> None:
+        raise NotImplementedError
+
+    def update(self) -> None:
+        raise NotImplementedError
+
+    def restore(self) -> None:
+        raise NotImplementedError
