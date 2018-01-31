@@ -27,7 +27,6 @@ class Transaction:
         Invalid arguments for the initialisation of an existing Transaction
     """
 
-
     def __init__(
             self,
             transaction_id: int = None,
@@ -59,7 +58,27 @@ class Transaction:
         raise NotImplementedError
 
     def update(self) -> None:
+        """
+        Replace existing transaction data with supplied data.
+        """
+        raise NotImplementedError
+
+    def delete(self) -> None:
+        """
+        Destroy this Transaction, such that it will no longer be included
+        in any view of this Entity's accounting information. Deleted
+        Transactions can be restored if necessary.
+        """
         raise NotImplementedError
 
     def restore(self) -> None:
+        """
+        Restore this transaction from a deleted state to an active state.
+        """
+        raise NotImplementedError
+
+    def list_versions(self) -> [Transaction]:
+        """
+        Return a list versions of this Transaction
+        """
         raise NotImplementedError
