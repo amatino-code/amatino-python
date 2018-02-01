@@ -6,9 +6,14 @@ Author: hugh@blinkybeach.com
 This module is intended to be private, used indirectly
 by public classes, and should not be used directly.
 """
+from datetime import datetime
 from amatino.entry import Entry
+from amatino.global_unit import GlobalUnit
+from amatino.custom_unit import CustomUnit
+from amatino._internal._data_package import _DataPackage
+from amatino._internal._am_time import _AMTime
 
-class _NewTransactionArguments:
+class _NewTransactionArguments(_DataPackage):
     """
     Private - Not intended to be used directly.
 
@@ -41,6 +46,9 @@ class _NewTransactionArguments:
     _ENTRY_MESSAGE = """
         Entries must be of instances of the Entry class
     """
+    _REQUIRED_DESCRIPTION_TYPE = """
+        Transaction description must be of type str
+        """
 
     def __init__(
             self,
@@ -51,39 +59,30 @@ class _NewTransactionArguments:
             entries: [Entry] = None
         ):
 
+        super().__init__()
+
         self._transaction_time = transaction_time
         self._description = description
         self._global_unit = global_unit
         self._custom_unit = custom_unit
         self._entries = entries
 
-        if not self._new_arguments_valid():
-            raise RuntimeError(self._INVALID_NEW_MESSAGE)
-        
-        return
-        
-    def _new_arguments_valid(self) -> bool:
-        """
-        Return true if supplied arguments appear valid for the creation of a
-        new Transaction. Will raise TypeErrors if arguments of inappropriate
-        type are found.
-        """
-
-        if self._transaction_id is not None:
-            raise ValueError(self._NO_TX_ID_MESSAGE)
-        
         if not isinstance(self._transaction_time, datetime):
             raise TypeError(self._DATETIME_MESSAGE)
-        
-        if not isinstance(self._description, str):
-            raise TypeError('Transaction description must be of type str')
 
-        if self._global_unit is not None and not isinstance(self._global_unit, 
-                                                            GlobalUnit):
+        if not isinstance(self._description, str):
+            raise TypeError(self._REQUIRED_DESCRIPTION_TYPE)
+
+        if (
+                self._global_unit is not None
+                and not isinstance(self._global_unit, GlobalUnit)
+        ):
             raise TypeError(self._GLOBAL_UNIT_TYPE_MESSAGE)
 
-        if self._custom_unit is not None and not isinstance(self._global_unit, 
-                                                            CustomUnit):
+        if (
+                self._custom_unit is not None
+                and not isinstance(self._custom_unit, CustomUnit)
+        ):
             raise TypeError(self._CUSTOM_UNIT_TYPE_MESSAGE)
 
         if self._custom_unit is not None and self._global_unit is not None:
@@ -97,8 +96,21 @@ class _NewTransactionArguments:
 
         if False in [isinstance(e, Entry) for e in self._entries]:
             raise TypeError(self._ENTRY_MESSAGE)
-        
-        return True
 
+        c_unit = None
+        g_unit = None
 
-        
+        if self._custom_unit is not None:
+            c_unit = self._custom_unit.code()
+        if self._global_unit is not None:
+            g_unit = self._global_unit.code()
+
+        self._package = {
+            'transaction_time': _AMTime(self._transaction_time).time(),
+            'description': self._description,
+            'global_unit': g_unit,
+            'custom_unit': c_unit,
+            'entries': [e.as_dict() for e in self._entries]
+        }
+
+        return

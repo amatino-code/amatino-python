@@ -5,6 +5,7 @@ Author: hugh@blinkybeach.com
 """
 from amatino.session import Session
 from amatino.region import Region
+from amatino._internal._new_entity_arguments import _NewEntityArguments
 
 class Entity:
     """
@@ -19,16 +20,39 @@ class Entity:
     1.  Retrieve an existing entity, by supplying a string entity identifier
         to the entity_id parameter.
 
-    2.  Create a new entity, by supplying parameters describing that entity.
+    2.  Create a new entity, by supplying all parameters.
+
     """
     def __init__(
             self,
             session: Session,
-            entity_id: str = None,
+            entity_id: str,
             name: str = None,
             description: str = None,
             region: Region = None
         ):
+
+        self._session = session
+        self._new_entity_arguments = None
+
+        if (
+                name is not None
+                or description is not None
+                or region is not None
+        ):
+            self._new_entity_arguments = _NewEntityArguments(
+                entity_id,
+                name,
+                description,
+                region
+            )
+
+            self._create()
+
+            return
+
+        self._entity_id = entity_id
+        self._retrieve()
 
         return
 

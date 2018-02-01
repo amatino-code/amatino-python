@@ -6,9 +6,9 @@ Author: hugh@blinkybeach.com
 This module is intended to be private, used indirectly
 by public classes, and should not be used directly.
 """
-import json
+from amatino._internal._data_package import _DataPackage
 
-class _NewCustomUnitArguments:
+class _NewCustomUnitArguments(_DataPackage):
     """
     Private - Not intended to be used directly.
 
@@ -53,6 +53,8 @@ class _NewCustomUnitArguments:
             exponent: int
         ):
 
+        super().__init__()
+
         if not isinstance(code, str):
             raise TypeError(self._REQUIRED_CODE_TYPE)
 
@@ -94,18 +96,12 @@ class _NewCustomUnitArguments:
         self._description = description
         self._exponent = exponent
 
-        return
-
-    def as_json_bytes(self) -> bytes:
-        """
-        Return these new Custom Unit arguments as JSON bytes suitable
-        for inclusion in an HTTP request.
-        """
-        data = json.dumps({
+        self._package = {
             'code': self._code,
             'name': self._name,
             'pririty': self._priority,
             'description': self._description,
             'exponent': self._exponent
-        }).encode('utf-8')
-        return data
+        }
+
+        return
