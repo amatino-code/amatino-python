@@ -12,7 +12,7 @@ class _NewCustomUnitArguments:
     """
     Private - Not intended to be used directly.
 
-    Used by instances of class CustomUnit to validate arguments provided 
+    Used by instances of class CustomUnit to validate arguments provided
     for the creation of a new Custom Unit
     """
     _REQUIRED_CODE_TYPE = 'Custom unit code must be of type str'
