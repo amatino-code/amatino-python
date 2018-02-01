@@ -6,6 +6,7 @@ Author: hugh@blinkybeach.com
 from amatino.session import Session
 from amatino.entity import Entity
 from amatino.global_unit import GlobalUnit
+from amatino._internal._new_custom_unit_arguments import _NewCustomUnitArguments
 
 class CustomUnit:
     """
@@ -38,7 +39,33 @@ class CustomUnit:
             description: str = None,
             exponent: int = None
         ):
-        raise NotImplementedError
+
+        self._new_unit_argumentss = None
+        self._code = None
+        self._session = session
+        self._entity = entity
+
+        if (
+                name is not None
+                or priority is not None
+                or description is not None
+                or exponent is not None
+        ):
+            self._new_unit_arguments = _NewCustomUnitArguments(
+                code,
+                name,
+                priority,
+                description,
+                exponent
+            )
+
+            self._create()
+            return
+
+        self._code = code
+        self._retrieve()
+
+        return
 
     def _create(self) -> None:
         raise NotImplementedError
