@@ -1,7 +1,7 @@
 """
 Amatino API Python Bindings
 Color Module
-Author: hugh@blinkybeach.com
+Author: hugh@amatino.io
 """
 
 class Color:

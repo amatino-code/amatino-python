@@ -1,7 +1,7 @@
 """
 Amatino API Python Bindings
 Custom Unit Module
-Author: hugh@blinkybeach.com
+Author: hugh@amatino.io
 """
 from amatino.session import Session
 from amatino.entity import Entity

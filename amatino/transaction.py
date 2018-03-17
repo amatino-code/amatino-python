@@ -1,7 +1,7 @@
 """
 Amatino API Python Bindings
 Transaction Module
-Author: hugh@blinkybeach.com
+Author: hugh@amatino.io
 """
 from datetime import datetime
 from amatino.global_unit import GlobalUnit

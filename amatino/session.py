@@ -1,7 +1,7 @@
 """
 Amatino API Python Bindings
 Session Module
-Author: hugh@blinkybeach.com
+Author: hugh@amatino.io
 """
 
 class Session:
@@ -35,12 +35,17 @@ class Session:
     """
     def __init__(
         self,
-        secret=None,
-        email=None,
+        secret: str = None,
+        email: str = None,
         session_id=None,
         api_key=None
         ):
-        raise NotImplementedError
+
+        if (
+                secret is not None
+                or email is not None
+            ):
+            raise NotImplementedError
 
     def _create(self):
         raise NotImplementedError
@@ -52,3 +57,5 @@ class Session:
         to 'logging out' the underlying User.
         """
         raise NotImplementedError
+
+

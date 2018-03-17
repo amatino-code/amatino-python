@@ -1,7 +1,7 @@
 """
 Amatino API Python Bindings
 Entry Module
-Author: hugh@blinkybeach.com
+Author: hugh@amatino.io
 """
 
 class Entry:

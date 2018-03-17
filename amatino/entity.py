@@ -1,7 +1,7 @@
 """
 Amatino API Python Bindings
 Entity Module
-Author: hugh@blinkybeach.com
+Author: hugh@amatino.io
 """
 from amatino.session import Session
 from amatino.region import Region

@@ -1,7 +1,7 @@
 """
 Amatino API Python Bindings
 AM Type Module
-Author: hugh@blinkybeach.com
+Author: hugh@amatino.io
 """
 
 class AMType:

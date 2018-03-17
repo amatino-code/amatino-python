@@ -1,7 +1,7 @@
 """
 Amatino API Python Bindings
 Global Unit Module
-Author: hugh@blinkybeach.com
+Author: hugh@amatino.io
 """
 from amatino.session import Session
 

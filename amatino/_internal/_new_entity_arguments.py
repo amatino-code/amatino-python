@@ -1,7 +1,7 @@
 """
 Amatino API Python Bindings
 New Entity Arguments Module
-Author: hugh@blinkybeach.com
+Author: hugh@amatino.io
 
 This module is intended to be private, used indirectly
 by public classes, and should not be used directly.
