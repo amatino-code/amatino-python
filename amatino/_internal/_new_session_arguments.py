@@ -7,7 +7,9 @@ This module is intended to be private, used indirectly
 by public classes, and should not be used directly.
 """
 
-class _NewSessionArguments:
+from amatino._internal._api_encodable import _ApiEncodable
+
+class _NewSessionArguments(_ApiEncodable):
     """
     Private - Not intended to be used directly.
 
@@ -30,5 +32,12 @@ class _NewSessionArguments:
 
         self._secret = secret
         self._email = email
+        
+        super().__init__()
+
+        self._data = {
+            'secret': self._secret,
+            'email': self._email
+        }
 
         return

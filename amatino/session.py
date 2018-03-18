@@ -3,6 +3,9 @@ Amatino API Python Bindings
 Session Module
 Author: hugh@amatino.io
 """
+from amatino._internal._new_session_arguments import _NewSessionArguments
+from amatino._internal._data_package import _DataPackage
+from amatino._internal._api_request import _ApiRequest
 
 class Session:
     """
@@ -33,6 +36,9 @@ class Session:
         in again every time they restart your application.
 
     """
+
+    _PATH = '/session'
+
     def __init__(
         self,
         secret: str = None,
@@ -45,7 +51,18 @@ class Session:
                 secret is not None
                 or email is not None
             ):
-            raise NotImplementedError
+            new_arguments = _NewSessionArguments(
+                secret=secret,
+                email=email
+            )
+            request_data = _DataPackage(object_data=new_arguments)
+            request = _ApiRequest(
+                path=self._PATH,
+                method='POST',
+                data=request_data
+            )
+            # Load request response
+            
 
     def _create(self):
         raise NotImplementedError
