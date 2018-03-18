@@ -5,3 +5,5 @@ lib/
 pip-selfcheck.json
 man/
 .DS_Store
+amatino.egg-info/
+dist/
