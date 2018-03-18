@@ -35,7 +35,8 @@ setup(
         'Topic :: Software Development :: Libraries'
     ],
     keywords='amatino api bindings accounting double-entry',
-    packages='to do',
+    packages=find_packages(),
+    python_requires='>=3',
     project_urls={
         'Subscribe': 'https://amatino.io/subscribe',
         'Discuss': 'https://amatino.io/discussion',
