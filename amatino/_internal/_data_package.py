@@ -52,3 +52,10 @@ class _DataPackage:
             return self._data.as_json().encode('utf-8')
         else:
             raise NotImplementedError('Listed object encoding not implemented')
+
+    def as_object(self):
+        """
+        Return the underlying object data, either a list
+        or a dictionary.
+        """
+        return self._data

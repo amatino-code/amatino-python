@@ -38,18 +38,24 @@ class Session:
     """
 
     _PATH = '/session'
+    _OBJECT_STRUCTURE = (
+        ('api_key', str),
+        ('session_id', int),
+        ('user_id', int)
+    )
 
     def __init__(
         self,
         secret: str = None,
         email: str = None,
         session_id=None,
-        api_key=None
+        api_key=None,
+        user_id=None
         ):
 
         if (
                 secret is not None
-                or email is not None
+                and email is not None
             ):
             new_arguments = _NewSessionArguments(
                 secret=secret,
@@ -62,7 +68,35 @@ class Session:
                 data=request_data
             )
             # Load request response
+            raw_object = request.load(self._OBJECT_STRUCTURE)
+            self.api_key = raw_object['api_key']
+            self.session_id = raw_object['session_id']
+            self.user_id = raw_object['user_id']
+
+            return
+
+        if (
+            session_id is not None
+            and api_key is not None
+            and user_id is not None
+            ):
+
+            if not isinstance(session_id, int):
+                raise TypeError('session_id must be of type int')
             
+            if not isinstance(api_key, str):
+                raise TypeError('api_key must be of type str')
+
+            if not isinstance(user_id, int):
+                raise TypeError('user_id must be of type int')
+
+            self.api_key = api_key
+            self.session_id = session_id
+            self.user_id = user_id
+
+            return
+
+        raise TypeError('Supply either email & secret, or api_key & session_id & user_id')
 
     def _create(self):
         raise NotImplementedError
@@ -74,5 +108,3 @@ class Session:
         to 'logging out' the underlying User.
         """
         raise NotImplementedError
-
-
