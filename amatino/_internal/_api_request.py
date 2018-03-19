@@ -80,7 +80,27 @@ class _ApiRequest:
 
         return
 
-    def load(self, index: int = None) -> dict:
+    def load(self, structure: tuple, index: int = None) -> dict:
         """
-        
+        Return a dictionary containing object attributes
         """
+        assert isinstance(structure, tuple)
+
+        if index is not None:
+            assert isinstance(index, int)
+
+        if isinstance(self._raw_data, list) and index is None:
+            raise TypeError('List source loads require an index')
+
+        if index = None:
+            raw_object = self._raw_data
+        else:
+            raw_object = self._raw_data[index]
+
+        for pair in structure:
+            if pair[0] not in raw_object:
+                raise NotImplementedError('Implement Amatino error here')
+            if not isintance(raw_object[pair[0]], pair[1])
+                raise NotImplementedError('Implement Amatino error here')
+
+        return raw_object
