@@ -7,3 +7,5 @@ man/
 .DS_Store
 amatino.egg-info/
 dist/
+amatino/_internal/__pycache__/*
+*.cpython-36.pyc

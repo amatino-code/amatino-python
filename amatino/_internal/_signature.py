@@ -3,8 +3,8 @@ Amatino API Python Bindings
 Signature Module
 Author: hugh@amatino.io
 
-This module is intended to be private, used indirectly
-by public classes, and should not be used directly.
+This module is intended to be private, used indirectly by public classes, and
+should not be used directly.
 """
 from hashlib import sha512
 from base64 import b64encode

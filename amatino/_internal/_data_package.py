@@ -3,8 +3,8 @@ Amatino API Python Bindings
 Data Package Module
 Author: hugh@amatino.io
 
-This module is intended to be private, used indirectly
-by public classes, and should not be used directly.
+This module is intended to be private, used indirectly by public classes, and
+should not be used directly.
 """
 import json
 from amatino._internal._api_encodable import _ApiEncodable
@@ -13,23 +13,30 @@ class _DataPackage:
     """
     Private - Not intended to be used directly.
 
-    Abstract class providing JSON data packing capabilities
-    to concrete classes.
+    Abstract class providing JSON data packing capabilities to concrete classes.
     """
     def __init__(self,
         list_data: list = None,
         object_data: dict = None,
-        override_listing: bool = False
+        override_listing: bool = False,
+        raw_list_data: [dict] = None
         ):
     
         self._data = None
+
+        if raw_list_data is not None:
+            assert isinstance(raw_list_data, list)
+            self._data = raw_list_data
+            return
 
         assert isinstance(override_listing, bool)
         assert (list_data is None or object_data is None)
         
         if list_data is not None:
             assert isinstance(list_data, list)
-            assert False not in [isinstance(e, _ApiEncodable) for e in list_data]
+            assert False not in [
+                isinstance(e, _ApiEncodable) for e in list_data
+            ]
             assert override_listing is False
             self._data = [e.in_serialisable_form() for e in list_data]
         
@@ -48,10 +55,7 @@ class _DataPackage:
         Return package arguments as JSON bytes suitable
         for inclusion in an HTTP request.
         """
-        if not isinstance(self._data, list):
-            return self._data.as_json().encode('utf-8')
-        else:
-            raise NotImplementedError('Listed object encoding not implemented')
+        return json.dumps(self._data).encode('utf-8')
 
     def as_object(self):
         """

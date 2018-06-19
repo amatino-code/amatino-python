@@ -3,7 +3,7 @@ Amatino API Python Bindings
 Entity Module
 Author: hugh@amatino.io
 """
-from amatino.session import Session
+from amatino import Session
 from amatino.region import Region
 from amatino._internal._new_entity_arguments import _NewEntityArguments
 

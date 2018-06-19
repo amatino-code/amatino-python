@@ -6,6 +6,7 @@ Author: hugh@amatino.io
 from amatino._internal._new_session_arguments import _NewSessionArguments
 from amatino._internal._data_package import _DataPackage
 from amatino._internal._api_request import _ApiRequest
+from amatino._internal._session_credentials import _SessionCredentials
 
 class Session:
     """
@@ -21,19 +22,23 @@ class Session:
     application might wish to create multiple Sessions for a User. For
     example, one per device.
 
-    You can initialise a Session in one of two ways.
+    You can initialise a Session in one of three ways.
 
-    1.  Create a new Session, by supplying the email and secret
-        parameters. For example, you might require a user to input
-        their email and secret passphrase when they first start
-        your application. Note: You must never store a user's
-        secret passphrase.
+    1.  Create a new Session, by supplying the email and secret parameters. For
+        example, you might require a user to input their email and secret
+        passphrase when they first start your application. Note: You must never
+        store a user's secret passphrase!
 
-    2.  Load an existing Session, by supplying the session_id and
-        api_key parameters. For example, perhaps you have securely
-        stored session data on the user's device, and wish to load
-        that session data such that the user does not have to log
-        in again every time they restart your application.
+    2.  Load an existing Session, by supplying the session_id and api_key
+        parameters. For example, perhaps you have securely stored session data
+        on the user's device, and wish to load that session data such that the
+        user does not have to log in again every time they restart your
+        application.
+
+    2.  Create a new Session, by supplying the user_id and secret parameters.
+        For example, you might have created a new User using the Amatino API,
+        and been provided with a user_id in response. You can then use that
+        user_id to login in lieu of an email address.
 
     """
 
@@ -48,18 +53,22 @@ class Session:
         self,
         secret: str = None,
         email: str = None,
-        session_id=None,
-        api_key=None,
-        user_id=None
+        user_id: int = None,
+        session_id: int = None,
+        api_key: str = None
         ):
 
         if (
                 secret is not None
-                and email is not None
+                and (
+                    email is not None
+                    or user_id is not None
+                )
             ):
             new_arguments = _NewSessionArguments(
                 secret=secret,
-                email=email
+                email=email,
+                user_id=user_id
             )
             request_data = _DataPackage(object_data=new_arguments)
             request = _ApiRequest(
@@ -108,3 +117,21 @@ class Session:
         to 'logging out' the underlying User.
         """
         raise NotImplementedError
+
+    def _credentials(self) -> _SessionCredentials:
+        """
+        Return _SessionCredentials from the attributes of this Session
+        """
+        return _SessionCredentials(self.api_key, self.session_id)
+        
+
+    def in_serialisable_form(self) -> dict:
+        """
+        Return a dictionary containing the attributes of this session
+        """
+        data = {
+            'session_id': self.session_id,
+            'user_id': self.user_id,
+            'api_key': self.api_key
+        }
+        return data

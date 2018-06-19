@@ -15,12 +15,12 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as readme_file:
 
 setup(
     name='amatino',
-    version='0.0.1',
+    version='0.0.2',
     description='Bindings for the Amatino API, a double-entry accounting system',
     long_description=LONG_DESCRIPTION,
     url='https://github.com/amatino-code/amatino-python',
     author='Amatino',
-    author_email='hello@amatino.io',
+    author_email='hugh@amatino.io',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -34,11 +34,12 @@ setup(
         'Topic :: Office/Business :: Financial :: Accounting',
         'Topic :: Software Development :: Libraries'
     ],
-    keywords='amatino api bindings accounting double-entry',
+    keywords='amatino api bindings accounting double-entry, accounts',
     packages=find_packages(exclude=('tests', 'tests.*')),
     python_requires='>=3',
     project_urls={
         'Subscribe': 'https://amatino.io/subscribe',
+        'Getting Started Guide': 'https://amatino.io/articles/getting-started',
         'Discuss': 'https://amatino.io/discussion',
         'Development Newsletter': 'https://amatino.io/newsletter'
     }
