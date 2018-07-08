@@ -18,7 +18,7 @@ In the mean time, you may wish to review [Amatino's HTTP documentation](https://
 
 ## Installation
 
-Amatino JS may be installed via [PIP](https://pypi.org/project/amatino/).
+Amatino Python may be installed via [PIP](https://pypi.org/project/amatino/).
 
 ````bash
 $ pip install amatino
