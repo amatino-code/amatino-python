@@ -59,7 +59,6 @@ class AmatinoAlpha:
         user_id: int = None,
         saved_session_filepath: str = None
     ):
-
         _ = self._validate_initialisation(
             email,
             secret,

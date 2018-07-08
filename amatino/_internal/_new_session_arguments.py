@@ -35,7 +35,7 @@ class _NewSessionArguments(_ApiEncodable):
         if email is not None and not isinstance(email, str):
             raise TypeError('email must be of type str')
 
-        if secret is not None and not isinstance(user_id, int):
+        if user_id is not None and not isinstance(user_id, int):
             raise TypeError('user_id must be of type int')
 
 
@@ -45,7 +45,7 @@ class _NewSessionArguments(_ApiEncodable):
 
         self._data = {
             'secret': self._secret,
-            'email': self._email,
+            'account_email': self._email,
             'user_id': self._user_id
         }
 

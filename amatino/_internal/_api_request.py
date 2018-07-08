@@ -23,7 +23,7 @@ class _ApiRequest:
     An instance of an http request to the Amatino API.
     """
 
-    _ENDPOINT = 'https://api.amatino.io'
+    _ENDPOINT = 'http://172.16.101.148'
     _DEBUG_ENDPOINT = 'http://127.0.0.1:5000'
     _TIMEOUT = 5
     _VALID_METHODS = ('GET', 'POST', 'PUT', 'DELETE', 'PATCH')
@@ -50,9 +50,6 @@ class _ApiRequest:
         if url_parameters is not None:
             assert isinstance(url_parameters, _UrlParameters)
 
-        assert isinstance(path, str)
-        assert isinstance(method, str)
-        assert isinstance(debug, bool)
         if method not in self._VALID_METHODS:
             raise ValueError(
                 'Invalid method. Options: ' + str(self._VALID_METHODS)
@@ -62,6 +59,8 @@ class _ApiRequest:
             url = self._ENDPOINT
         else:
             url = self._DEBUG_ENDPOINT
+
+        url += path
 
         if url_parameters is not None:
             url += url_parameters.parameter_string()
@@ -77,8 +76,8 @@ class _ApiRequest:
         try:
             self._response = urlopen(request, timeout=self._TIMEOUT)
         except HTTPError as error:
-            print(error)
-            raise NotImplementedError('Insert Amatino error handling here')
+            # Insert error handling
+            raise error
 
         self._raw_data = loads(self._response.read().decode('utf-8'))
 

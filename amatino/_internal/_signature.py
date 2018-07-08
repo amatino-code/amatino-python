@@ -38,7 +38,7 @@ class _Signature:
         else:
             json_string = None
 
-        encoded_key = api_key.ecode('utf-8')
+        encoded_key = api_key.encode('utf-8')
 
         timestamp = str(int(time.time()))
 

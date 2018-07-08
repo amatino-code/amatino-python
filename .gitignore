@@ -9,3 +9,4 @@ amatino.egg-info/
 dist/
 amatino/_internal/__pycache__/*
 *.cpython-36.pyc
+test_env.sh

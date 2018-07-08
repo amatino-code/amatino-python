@@ -70,7 +70,10 @@ class Session:
                 email=email,
                 user_id=user_id
             )
-            request_data = _DataPackage(object_data=new_arguments)
+            request_data = _DataPackage(
+                object_data=new_arguments,
+                override_listing=True
+            )
             request = _ApiRequest(
                 path=self._PATH,
                 method='POST',
@@ -105,7 +108,10 @@ class Session:
 
             return
 
-        raise TypeError('Supply either email & secret, or api_key & session_id & user_id')
+        error = """
+        Supply either email & secret, or api_key & session_id & user_id
+        """
+        raise TypeError(error)
 
     def _create(self):
         raise NotImplementedError
