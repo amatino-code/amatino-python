@@ -56,6 +56,44 @@ class AlphaTest(Test):
 
         return entity
 
+    def create_accounts(
+        self,
+        alpha: AmatinoAlpha,
+        entity: {str: object}
+    ) -> [{str: object}]:
+        """
+        Return a list of dictionaries representing Accounts created with the
+        supplied AmatinoAlpha instance, in the supplied entity.
+        """
+        assert isinstance(alpha, AmatinoAlpha)
+        assert 'entity_id' in entity
+        
+        accounts = alpha.request(
+            path='/accounts',
+            method='POST',
+            query_string='?entity_id=' + entity['entity_id'],
+            body=[{
+                "name": "Subscription income",
+                "type": 4,
+                "parent_account_id": None,
+                "global_unit_id": 5,
+                "custom_unit_id": None,
+                "counterparty_entity_id": None,
+                "description": "Sweet loot",
+                "colour": None
+            }, {
+                "name": "Cash",
+                "type": 1,
+                "parent_account_id": None,
+                "global_unit_id": 5,
+                "custom_unit_id": None,
+                "counterparty_entity_id": None,
+                "description": "Stacks of Benjamins",
+                "colour": None
+            }]
+        )
+        return accounts
+
     def _load_email(self) -> str:
         """
         Return a string Amatino account email address from the environment.
