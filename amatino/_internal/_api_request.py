@@ -15,7 +15,6 @@ from amatino._internal._data_package import _DataPackage
 from amatino._internal._url_parameters import _UrlParameters
 from amatino._internal._request_headers import _RequestHeaders
 
-
 class _ApiRequest:
     """    
     Private - Not intended to be used directly.
@@ -23,7 +22,7 @@ class _ApiRequest:
     An instance of an http request to the Amatino API.
     """
 
-    _ENDPOINT = 'http://172.16.101.148'
+    _ENDPOINT = 'https://api.amatino.io'
     _DEBUG_ENDPOINT = 'http://127.0.0.1:5000'
     _TIMEOUT = 5
     _VALID_METHODS = ('GET', 'POST', 'PUT', 'DELETE', 'PATCH')
@@ -66,7 +65,6 @@ class _ApiRequest:
             url += url_parameters.parameter_string()
 
         headers = _RequestHeaders(path, session_credentials, data)
-
         request = Request(
             url=url,
             data=request_data,

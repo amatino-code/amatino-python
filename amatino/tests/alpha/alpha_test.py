@@ -94,6 +94,40 @@ class AlphaTest(Test):
         )
         return accounts
 
+    def create_transactions(
+        self,
+        alpha: AmatinoAlpha,
+        entity: {str: object},
+        accounts: [{str: object}]
+    ) -> [{str: object}]:
+        assert isinstance(alpha, AmatinoAlpha)
+        assert 'entity_id' in entity
+        assert 'account_id' in accounts[0] and 'account_id' in accounts[1]
+
+        transactions = alpha.request(
+            path='/transactions',
+            method='POST',
+            query_string='?entity_id=' + entity['entity_id'],
+            body=[{
+                "transaction_time": "2018-07-08_07:08:06.784326",
+                "description": "Receipt of some dosh",
+                "global_unit_denomination": 11,
+                "custom_unit_denomination": None,
+                "entries": [{
+                    "account_id": accounts[0]["account_id"],
+                    "description": '',
+                    "side": 1,
+                    "amount": "42.01"
+                    }, {
+                    "account_id": accounts[1]["account_id"],
+                    "description": '',
+                    "side": 0,
+                    "amount": "42.01"
+                }]
+            }]
+        )
+        return transactions
+
     def _load_email(self) -> str:
         """
         Return a string Amatino account email address from the environment.

@@ -11,5 +11,6 @@ import amatino.tests.alpha as alpha
 SEQUENCE = [
     alpha.AlphaCreateTest,
     alpha.AlphaCreateEntityTest,
-    alpha.AlphaCreateAccountTest
+    alpha.AlphaCreateAccountTest,
+    alpha.AlphaCreateTransactionsTest
 ]
