@@ -33,7 +33,7 @@ The ````AmatinoAlpha```` object allows you to use the Amatino API without dealin
 Initialise an  `AmatinoAlpha` instance like so:
 
 ````Python
-from Amatino import AmatinoAlpha
+from amatino import AmatinoAlpha
 
 amatino_alpha = AmatinoAlpha(
     email="clever@cookie.com",
@@ -47,7 +47,7 @@ Requests may then be made:
 entity = amatino_alpha.request(
     path="/entities",
     query_string=None,
-    method="POST"
+    method="POST",
     body=[{
         "name": "My First Entity",
         "description": None,
