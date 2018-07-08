@@ -34,7 +34,7 @@ setup(
         'Topic :: Office/Business :: Financial :: Accounting',
         'Topic :: Software Development :: Libraries'
     ],
-    keywords='amatino api bindings accounting double-entry, accounts',
+    keywords='amatino api bindings accounting double-entry accounts library',
     packages=find_packages(exclude=('tests', 'tests.*')),
     long_description_content_type="text/markdown",
     python_requires='>=3',
