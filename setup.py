@@ -10,12 +10,12 @@ from codecs import open
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as readme_file:
+with open(path.join(here, 'README.md'), encoding='utf-8') as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
 setup(
     name='amatino',
-    version='0.0.2',
+    version='0.0.3',
     description='Bindings for the Amatino API, a double-entry accounting system',
     long_description=LONG_DESCRIPTION,
     url='https://github.com/amatino-code/amatino-python',
@@ -36,6 +36,7 @@ setup(
     ],
     keywords='amatino api bindings accounting double-entry, accounts',
     packages=find_packages(exclude=('tests', 'tests.*')),
+    long_description_content_type="text/markdown",
     python_requires='>=3',
     project_urls={
         'Subscribe': 'https://amatino.io/subscribe',
