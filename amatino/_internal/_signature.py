@@ -38,7 +38,7 @@ class _Signature:
         else:
             json_string = None
 
-        encoded_key = api_key.ecode('ascii')
+        encoded_key = api_key.ecode('utf-8')
 
         timestamp = str(int(time.time()))
 
@@ -47,7 +47,7 @@ class _Signature:
         else:
             message = timestamp + path
 
-        encoded_message = message.encode('ascii')
+        encoded_message = message.encode('utf-8')
 
         digest = hmac.new(encoded_key, encoded_message, sha512).digest()
         self._signature = b64encode(digest).decode()
