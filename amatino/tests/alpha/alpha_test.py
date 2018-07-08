@@ -1,3 +1,9 @@
+"""
+Amatino API Python Bindings
+AlphaTest Module
+Author: hugh@amatino.io
+"""
+
 from amatino.tests.test import Test
 from amatino.amatino_alpha import AmatinoAlpha
 import os

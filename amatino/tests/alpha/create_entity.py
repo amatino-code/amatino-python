@@ -1,3 +1,9 @@
+"""
+Amatino API Python Bindings
+Entity creation (alpha) test
+Author: hugh@amatino.io
+"""
+
 from amatino.amatino_alpha import AmatinoAlpha
 from amatino.tests.alpha.alpha_test import AlphaTest
 
