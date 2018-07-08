@@ -18,7 +18,7 @@ setup(
     version='0.0.4',
     description='Bindings for the Amatino API, a double-entry accounting system',
     long_description=LONG_DESCRIPTION,
-    url='https://github.com/amatino-code/amatino-python',
+    url='https://amatino.io',
     author='Amatino',
     author_email='hugh@amatino.io',
     classifiers=[
@@ -39,6 +39,7 @@ setup(
     long_description_content_type="text/markdown",
     python_requires='>=3',
     project_urls={
+        'Github Repository': 'https://github.com/amatino-code/amatino-python',
         'Subscribe': 'https://amatino.io/subscribe',
         'Getting Started Guide': 'https://amatino.io/articles/getting-started',
         'Discuss': 'https://amatino.io/discussion',
