@@ -15,8 +15,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as readme_file:
 
 setup(
     name='amatino',
-    version='0.0.6',
-    description='Bindings for the Amatino API, a double-entry accounting system',
+    version='0.0.7',
+    description='Bindings for the Amatino API, an accounting & financial data engine',
     long_description=LONG_DESCRIPTION,
     url='https://amatino.io',
     author='Amatino',
@@ -39,6 +39,7 @@ setup(
     long_description_content_type="text/markdown",
     python_requires='>=3',
     project_urls={
+        'Twitter': 'https://twitter.com/amatinoapi',
         'Github Repository': 'https://github.com/amatino-code/amatino-python',
         'Subscribe': 'https://amatino.io/subscribe',
         'Getting Started Guide': 'https://amatino.io/articles/getting-started',
