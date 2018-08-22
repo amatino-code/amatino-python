@@ -52,6 +52,8 @@ class Entity:
 
         raise NotImplementedError
 
+    session = property()
+
     @classmethod
     def create(
         cls: type,
@@ -110,7 +112,6 @@ class Entity:
                 active=raw_entity['active'],
                 permissions_graph=raw_entity['permissions_graph']
             )
-
         except KeyError:
             raise AmatinoError('Unexpected response format, missing a key')
         return entity
