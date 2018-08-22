@@ -7,6 +7,8 @@ This module is intended to be private, used indirectly
 by public classes, and should not be used directly.
 """
 from amatino.internal.url_target import UrlTarget
+from typing import Optional
+from typing import List
 
 
 class UrlParameters:
@@ -18,10 +20,10 @@ class UrlParameters:
     """
     def __init__(
         self,
-        entity_id: str = None,
-        targets: [UrlTarget] = None,
-        raw_query_string: str = None
-        ):
+        entity_id: Optional[str] = None,
+        targets: Optional[List[UrlTarget]] = None,
+        raw_query_string: Optional[str] = None
+    ):
 
         if raw_query_string is not None:
             if not isinstance(raw_query_string, str):

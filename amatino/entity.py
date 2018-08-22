@@ -9,6 +9,7 @@ from amatino.internal.new_entity_arguments import NewEntityArguments
 from amatino.internal.api_request import ApiRequest
 from amatino.internal.data_package import DataPackage
 from amatino.internal.http_method import HTTPMethod
+from amatino.internal.url_parameters import UrlParameters
 from amatino.amatino_error import AmatinoError
 from typing import TypeVar
 from typing import Optional
@@ -122,8 +123,23 @@ class Entity:
         session: Session,
         entity_id: str
     ) -> T:
+        if not isinstance(session, Session):
+            raise TypeError('session must be of type `Session`')
 
-        return
+        url_parameters = UrlParameters(entity_id=entity_id)
+
+        request = ApiRequest(
+            path=Entity.PATH,
+            method=HTTPMethod.GET,
+            session_credentials=session._credentials(),
+            data=None,
+            url_parameters=url_parameters,
+            debug=False
+        )
+
+        entity = Entity._decode(request.response_data)
+
+        return entity
 
     def _create(self) -> None:
         raise NotImplementedError

@@ -39,6 +39,8 @@ class ApiRequest:
         debug: bool = False
     ) -> None:
 
+        self.response_data = None
+
         if session_credentials is not None:
             assert isinstance(session_credentials, SessionCredentials)
 
@@ -74,40 +76,6 @@ class ApiRequest:
             # Insert error handling
             raise error
 
-        self._raw_data = loads(self._response.read().decode('utf-8'))
+        self.response_data = loads(self._response.read().decode('utf-8'))
 
         return
-
-    def load(
-        self,
-        structure: tuple,
-        index: int = None,
-        load_raw: bool = False
-    ) -> dict:
-        """
-        Return a dictionary containing object attributes. Optionally load the
-        raw data from the request, why may be of type list.
-        """
-        if load_raw is True:
-            return self._raw_data
-
-        assert isinstance(structure, tuple)
-
-        if index is not None:
-            assert isinstance(index, int)
-
-        if isinstance(self._raw_data, list) and index is None:
-            raise TypeError('List source loads require an index')
-
-        if index is None:
-            raw_object = self._raw_data
-        else:
-            raw_object = self._raw_data[index]
-
-        for pair in structure:
-            if pair[0] not in raw_object:
-                raise NotImplementedError('Implement Amatino error here')
-            if not isinstance(raw_object[pair[0]], pair[1]):
-                raise NotImplementedError('Implement Amatino error here')
-
-        return raw_object
