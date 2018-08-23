@@ -15,27 +15,9 @@ from amatino.amatino_error import AmatinoError
 from typing import TypeVar
 from typing import Optional
 from typing import Type
-from typing import Any
+from amatino.internal.immutable import Immutable
 
 T = TypeVar('T', bound='Entity')
-
-
-class Immutable(property):
-
-    def __init__(self, fget):
-
-        super().__init__(
-            fget,
-            self._set_error,
-            self._set_error,
-            None
-        )
-
-    def _set_error(self) -> None:
-        raise TypeError('Cannot set')
-
-    def _get_error(self) -> None:
-        raise TypeError('Cannot get')
 
 
 class Entity:
@@ -49,10 +31,6 @@ class Entity:
     PATH = '/entities'
     MAX_NAME_LENGTH = NewEntityArguments.MAX_NAME_LENGTH
     MAX_DESCRIPTION_LENGTH = NewEntityArguments.MAX_DESCRIPTION_LENGTH
-    _IMMUTABLE_ERROR = """
-    #Entity instances may not be mutated via properties. Use the .update()
-    #method to make changes.
-    """
 
     def __init__(
         self,
@@ -78,13 +56,13 @@ class Entity:
         return
 
     session: Session = Immutable(lambda s: s._session)
-    id_ = Immutable(lambda s: s._entity_id)
-    name = Immutable(lambda s: s._name)
-    description = Immutable(lambda s: s._description)
-    region_id = Immutable(lambda s: s._region_id)
-    owner_id = Immutable(lambda s: s.owner_id)
-    active = Immutable(lambda s: s._active)
-    permissions_graph = Immutable(lambda s: s._permissions_graph)
+    id_: str = Immutable(lambda s: s._entity_id)
+    name: str = Immutable(lambda s: s._name)
+    description: str = Immutable(lambda s: s._description)
+    region_id: int = Immutable(lambda s: s._region_id)
+    owner_id: int = Immutable(lambda s: s.owner_id)
+    active: bool = Immutable(lambda s: s._active)
+    permissions_graph: dict = Immutable(lambda s: s._permissions_graph)
 
     @classmethod
     def create(
@@ -237,7 +215,3 @@ class Entity:
         is updated-in-place.
         """
         raise NotImplementedError
-
-    @classmethod
-    def _immutable(cls, set_arg_1: Any, set_arg_2) -> None:
-        raise AmatinoError(Entity._IMMUTABLE_ERROR)
