@@ -5,7 +5,8 @@ Author: hugh@amatino.io
 """
 from amatino import Session
 from amatino.region import Region
-from amatino.internal.new_entity_arguments import NewEntityArguments
+from amatino.internal.entity_create_arguments import NewEntityArguments
+from amatino.internal.entity_update_arguments import EntityUpdateArguments
 from amatino.internal.api_request import ApiRequest
 from amatino.internal.data_package import DataPackage
 from amatino.internal.http_method import HTTPMethod
@@ -13,9 +14,28 @@ from amatino.internal.url_parameters import UrlParameters
 from amatino.amatino_error import AmatinoError
 from typing import TypeVar
 from typing import Optional
+from typing import Type
 from typing import Any
 
 T = TypeVar('T', bound='Entity')
+
+
+class Immutable(property):
+
+    def __init__(self, fget):
+
+        super().__init__(
+            fget,
+            self._set_error,
+            self._set_error,
+            None
+        )
+
+    def _set_error(self) -> None:
+        raise TypeError('Cannot set')
+
+    def _get_error(self) -> None:
+        raise TypeError('Cannot get')
 
 
 class Entity:
@@ -29,6 +49,10 @@ class Entity:
     PATH = '/entities'
     MAX_NAME_LENGTH = NewEntityArguments.MAX_NAME_LENGTH
     MAX_DESCRIPTION_LENGTH = NewEntityArguments.MAX_DESCRIPTION_LENGTH
+    _IMMUTABLE_ERROR = """
+    #Entity instances may not be mutated via properties. Use the .update()
+    #method to make changes.
+    """
 
     def __init__(
         self,
@@ -39,7 +63,7 @@ class Entity:
         region_id: int,
         owner_id: int,
         active: bool,
-        permissions_graph: {str: {str: {str: bool}}}
+        permissions_graph: dict
     ) -> None:
 
         self._session = session
@@ -51,16 +75,23 @@ class Entity:
         self._active = active
         self._permissions_graph = permissions_graph
 
-        raise NotImplementedError
+        return
 
-    session = property()
+    session: Session = Immutable(lambda s: s._session)
+    id_ = Immutable(lambda s: s._entity_id)
+    name = Immutable(lambda s: s._name)
+    description = Immutable(lambda s: s._description)
+    region_id = Immutable(lambda s: s._region_id)
+    owner_id = Immutable(lambda s: s.owner_id)
+    active = Immutable(lambda s: s._active)
+    permissions_graph = Immutable(lambda s: s._permissions_graph)
 
     @classmethod
     def create(
-        cls: type,
+        cls: Type[T],
         session: Session,
         name: str,
-        description: str,
+        description: Optional[str],
         region: Optional[Region] = None
     ) -> T:
 
@@ -81,12 +112,12 @@ class Entity:
             False
         )
 
-        created_entity = Entity._decode(request.response_data, session)
+        created_entity = cls._decode(request.response_data, session)
 
         return created_entity
 
     @classmethod
-    def _decode(cls: type, data: list, session: Session) -> T:
+    def _decode(cls: Type[T], data: list, session: Session) -> T:
         """
         Return an Entity instance decoded from API response data
         """
@@ -103,7 +134,7 @@ class Entity:
         if not isinstance(raw_entity, dict):
             raise AmatinoError('Unexpected response format')
         try:
-            entity = Entity(
+            entity = cls(
                 session=session,
                 entity_id=raw_entity['session_id'],
                 name=raw_entity['name'],
@@ -115,16 +146,20 @@ class Entity:
             )
         except KeyError:
             raise AmatinoError('Unexpected response format, missing a key')
+
         return entity
 
     @classmethod
     def retrieve(
-        cls,
+        cls: Type[T],
         session: Session,
         entity_id: str
     ) -> T:
         if not isinstance(session, Session):
             raise TypeError('session must be of type `Session`')
+
+        if not isinstance(entity_id, str):
+            raise TypeError('entity_id must be of type `str`')
 
         url_parameters = UrlParameters(entity_id=entity_id)
 
@@ -137,7 +172,7 @@ class Entity:
             debug=False
         )
 
-        entity = Entity._decode(request.response_data)
+        entity = cls._decode(request.response_data, session)
 
         return entity
 
@@ -147,12 +182,47 @@ class Entity:
     def _retrieve(self) -> None:
         raise NotImplementedError
 
-    def update(self) -> None:
+    def update(
+        self,
+        name: str,
+        description: str,
+        owner_id: int,
+        permissions_graph: dict
+    ) -> None:
         """
-        Modify data describing this Entity. Returns None, the Entity
-        Object is updated-in-place.
+        Modify data describing this Entity. Returns this Entity, the Entity
+        instance is updated-in-place.
         """
-        raise NotImplementedError
+
+        update_arguments = EntityUpdateArguments(
+            entity_id=self._entity_id,
+            name=name,
+            description=description,
+            owner_id=owner_id,
+            permissions_graph=permissions_graph
+        )
+
+        request = ApiRequest(
+            path=Entity.PATH,
+            method=HTTPMethod.PUT,
+            session_credentials=self._session._credentials(),
+            data=update_arguments,
+            url_parameters=None
+        )
+
+        updated_entity = Entity._decode(request.response_data, self.session)
+
+        assert self._entity_id == updated_entity.id_
+        self._name = updated_entity.name
+        self._description = updated_entity.description
+        self._region_id = updated_entity.region_id
+        self._owner_id = updated_entity.region_id
+        self._active = updated_entity.active
+        self._permissions_graph = updated_entity.permissions_graph
+
+        del updated_entity
+
+        return None
 
     def delete(self) -> None:
         """
@@ -167,3 +237,7 @@ class Entity:
         is updated-in-place.
         """
         raise NotImplementedError
+
+    @classmethod
+    def _immutable(cls, set_arg_1: Any, set_arg_2) -> None:
+        raise AmatinoError(Entity._IMMUTABLE_ERROR)

@@ -12,6 +12,7 @@ from typing import Optional
 from typing import Any
 from amatino.internal.encodable import Encodable
 
+
 class NewEntityArguments(Encodable):
     """
     Private - Not intended to be used directly.
@@ -20,7 +21,7 @@ class NewEntityArguments(Encodable):
     for the creation of new Entities.
     """
     MAX_NAME_LENGTH = 1024
-    MAX_DESCRIPTION_LENGTH = 1024
+    MAX_DESCRIPTION_LENGTH = 4096
 
     def __init__(
         self,

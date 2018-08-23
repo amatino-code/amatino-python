@@ -6,6 +6,7 @@ Author: hugh@amatino.io
 
 from amatino.tests.test import Test
 from amatino.amatino_alpha import AmatinoAlpha
+from typing import List
 import os
 
 class AlphaTest(Test):
@@ -35,7 +36,7 @@ class AlphaTest(Test):
         )
         return alpha
 
-    def create_entity(self, alpha: AmatinoAlpha) -> {str: object}:
+    def create_entity(self, alpha: AmatinoAlpha) -> dict:
         """
         Return a dictionary representation of an Entity created with the
         supplied AmatinoAlpha instance.
@@ -59,8 +60,8 @@ class AlphaTest(Test):
     def create_accounts(
         self,
         alpha: AmatinoAlpha,
-        entity: {str: object}
-    ) -> [{str: object}]:
+        entity: dict
+    ) -> List[dict]:
         """
         Return a list of dictionaries representing Accounts created with the
         supplied AmatinoAlpha instance, in the supplied entity.
