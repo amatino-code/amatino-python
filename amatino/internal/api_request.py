@@ -13,13 +13,13 @@ from urllib.request import HTTPError
 from amatino.internal.session_credentials import SessionCredentials
 from amatino.internal.data_package import DataPackage
 from amatino.internal.url_parameters import UrlParameters
-from amatino.internal.request_headers import _RequestHeaders
+from amatino.internal.request_headers import RequestHeaders
 from amatino.internal.http_method import HTTPMethod
 from typing import Optional
 
 
 class ApiRequest:
-    """    
+    """
     Private - Not intended to be used directly.
 
     An instance of an http request to the Amatino API.
@@ -63,7 +63,7 @@ class ApiRequest:
         if url_parameters is not None:
             url += url_parameters.parameter_string()
 
-        headers = _RequestHeaders(path, session_credentials, data)
+        headers = RequestHeaders(path, session_credentials, data)
         request = Request(
             url=url,
             data=request_data,

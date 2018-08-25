@@ -6,6 +6,7 @@ Author: hugh@amatino.io
 from amatino.internal.encodable import Encodable
 from amatino.internal.entity_create_arguments import NewEntityArguments
 from amatino.internal.constrained_string import ConstrainedString
+from typing import Optional
 
 
 class EntityUpdateArguments(Encodable):
@@ -19,10 +20,12 @@ class EntityUpdateArguments(Encodable):
         name: str,
         description: str,
         owner_id: int,
-        permissions_graph: {str: {str: {str: bool}}}
+        permissions_graph: Optional[dict]
     ) -> None:
 
         assert isinstance(entity_id, str)
+
+        self._entity_id = entity_id
 
         self._name = ConstrainedString(
             name,
@@ -41,6 +44,11 @@ class EntityUpdateArguments(Encodable):
 
         self._owner_id = owner_id
 
+        self._permissions_graph = permissions_graph
+
+        if permissions_graph is None:
+            return
+
         if not isinstance(permissions_graph, dict):
             raise TypeError('permissions_graph must be of type `dict`')
 
@@ -50,9 +58,7 @@ class EntityUpdateArguments(Encodable):
         upg = permissions_graph
         if False in [isinstance(upg[k], dict) for k in upg]:
             raise TypeError('permissions_graph values must be of type `dict`')
-
-        self._permissions_graph = permissions_graph
-
+    
         return
 
     def serialise(self):

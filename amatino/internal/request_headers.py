@@ -10,7 +10,8 @@ from amatino.internal.session_credentials import SessionCredentials
 from amatino.internal.data_package import DataPackage
 from amatino.internal.signature import Signature
 
-class _RequestHeaders:
+
+class RequestHeaders:
     """
     Private - Not intended to be used directly.
 
@@ -23,7 +24,7 @@ class _RequestHeaders:
         path: str,
         session_credentials: SessionCredentials = None,
         request_data: DataPackage = None
-        ):
+    ) -> None:
 
         self._headers = {'User-Agent': self._AGENT}
 
@@ -33,15 +34,19 @@ class _RequestHeaders:
         if session_credentials is None:
             return
 
+        json_data = None
+        if request_data is not None:
+            json_data = request_data.as_object()
+
         signature = Signature(
             api_key=session_credentials.api_key,
             path=path,
-            json_data=request_data.as_object()
+            json_data=json_data
         )
 
         self._headers['X-Signature'] = signature.string()
         self._headers['X-Session-ID'] = session_credentials.session_id
-        
+
         return
 
     def dictionary(self) -> dict:

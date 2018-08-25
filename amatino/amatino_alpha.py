@@ -14,9 +14,9 @@ interact with the Amatino API from Python.
 """
 import json
 from amatino import Session
-from amatino._internal._api_request import _ApiRequest
-from amatino._internal._url_parameters import _UrlParameters
-from amatino._internal._data_package import _DataPackage
+from amatino.internal.api_request import ApiRequest
+from amatino.internal.url_parameters import UrlParameters
+from amatino.internal.data_package import DataPackage
 
 class AmatinoAlpha:
     """
@@ -76,7 +76,7 @@ class AmatinoAlpha:
                 email=email,
                 user_id=user_id
             )
-    
+
         return
 
     def _validate_initialisation(
@@ -168,14 +168,14 @@ class AmatinoAlpha:
         data_package = None
         if body is not None:
             _ = json.dumps(body) # Provoke encoding failure early
-            data_package = _DataPackage(raw_list_data=body)
+            data_package = DataPackage(raw_list_data=body)
 
-        request = _ApiRequest(
+        request = ApiRequest(
             path,
             method,
             session_credentials=self._session._credentials(),
             data=data_package,
-            url_parameters=_UrlParameters(raw_query_string=query_string)
+            url_parameters=UrlParameters(raw_query_string=query_string)
         )
 
         return request.load(None, load_raw=True)

@@ -60,7 +60,7 @@ class Entity:
     name: str = Immutable(lambda s: s._name)
     description: str = Immutable(lambda s: s._description)
     region_id: int = Immutable(lambda s: s._region_id)
-    owner_id: int = Immutable(lambda s: s.owner_id)
+    owner_id: int = Immutable(lambda s: s._owner_id)
     active: bool = Immutable(lambda s: s._active)
     permissions_graph: dict = Immutable(lambda s: s._permissions_graph)
 
@@ -114,7 +114,7 @@ class Entity:
         try:
             entity = cls(
                 session=session,
-                entity_id=raw_entity['session_id'],
+                entity_id=raw_entity['entity_id'],
                 name=raw_entity['name'],
                 description=raw_entity['description'],
                 region_id=raw_entity['storage_region'],
@@ -172,35 +172,39 @@ class Entity:
         instance is updated-in-place.
         """
 
-        update_arguments = EntityUpdateArguments(
-            entity_id=self._entity_id,
-            name=name,
-            description=description,
-            owner_id=owner_id,
-            permissions_graph=permissions_graph
-        )
+        raise NotImplementedError
 
-        request = ApiRequest(
-            path=Entity.PATH,
-            method=HTTPMethod.PUT,
-            session_credentials=self._session._credentials(),
-            data=update_arguments,
-            url_parameters=None
-        )
+        #update_arguments = EntityUpdateArguments(
+        #    entity_id=self._entity_id,
+        #    name=name,
+        #    description=description,
+        #    owner_id=owner_id,
+        #    permissions_graph=permissions_graph
+        #)
 
-        updated_entity = Entity._decode(request.response_data, self.session)
+        #data_package = DataPackage.from_object(data=update_arguments)
 
-        assert self._entity_id == updated_entity.id_
-        self._name = updated_entity.name
-        self._description = updated_entity.description
-        self._region_id = updated_entity.region_id
-        self._owner_id = updated_entity.region_id
-        self._active = updated_entity.active
-        self._permissions_graph = updated_entity.permissions_graph
+        #request = ApiRequest(
+        #    path=Entity.PATH,
+        #    method=HTTPMethod.PUT,
+        #    session_credentials=self._session._credentials(),
+        #    data=data_package,
+        #    url_parameters=None
+        #)
 
-        del updated_entity
+        #updated_entity = Entity._decode(request.response_data, self.session)
 
-        return None
+        #assert self._entity_id == updated_entity.id_
+        #self._name = updated_entity.name
+        #self._description = updated_entity.description
+        #self._region_id = updated_entity.region_id
+        #self._owner_id = updated_entity.region_id
+        #self._active = updated_entity.active
+        #self._permissions_graph = updated_entity.permissions_graph
+
+        #del updated_entity
+
+        #return None
 
     def delete(self) -> None:
         """

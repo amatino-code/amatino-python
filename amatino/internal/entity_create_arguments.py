@@ -46,13 +46,18 @@ class NewEntityArguments(Encodable):
             raise TypeError('region must be of type `Region`')
 
         self._region = region
-        
+
         return
 
     def serialise(self) -> Any:
+
+        region_id = None
+        if self._region is not None:
+            region_id = self._region.id_
+
         data = {
             'name': str(self._name),
             'description': str(self._description),
-            'region_id': self._region.id
+            'region_id': region_id
         }
         return data

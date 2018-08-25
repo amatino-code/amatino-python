@@ -12,7 +12,7 @@ from typing import List
 
 
 class UrlParameters:
-    """    
+    """
     Private - Not intended to be used directly.
 
     An instance of url parameters to be included in a request
@@ -23,7 +23,7 @@ class UrlParameters:
         entity_id: Optional[str] = None,
         targets: Optional[List[UrlTarget]] = None,
         raw_query_string: Optional[str] = None
-    ):
+    ) -> None:
 
         if raw_query_string is not None:
             if not isinstance(raw_query_string, str):
@@ -50,13 +50,16 @@ class UrlParameters:
 
         if entity_id is not None:
             self._parameter_string = '?entity_id=' + entity_id
-        
+
+        if targets is None:
+            return
+
         remaining_targets = targets[:]
 
         if entity_id is None:
             self._parameter_string = '?' + str(targets[0])
             remaining_targets = targets[1:]
-        
+
         for target in remaining_targets:
             self._parameter_string += '&' + str(target)
 
@@ -64,7 +67,6 @@ class UrlParameters:
 
     def __str__(self):
         return self._parameter_string
-
 
     def parameter_string(self) -> str:
         """
