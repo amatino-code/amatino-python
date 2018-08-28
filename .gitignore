@@ -12,3 +12,4 @@ amatino/_internal/__pycache__/*
 test_env.sh
 .idea/*
 export_test.sh
+.vscode/
