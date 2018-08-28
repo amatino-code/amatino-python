@@ -4,8 +4,13 @@ Global Unit Module
 Author: hugh@amatino.io
 """
 from amatino.session import Session
+from amatino.denomination import Denomination
+from typing import TypeVar
 
-class GlobalUnit:
+T = TypeVar('T', bound='GlobalUnit')
+
+
+class GlobalUnit(Denomination):
     """
     Global Units are standardised units of account available across
     all Amatino Entities. For example, many major currencies are available
@@ -13,15 +18,14 @@ class GlobalUnit:
 
     Global Units cannot be modified by Amatino users.
     """
-    def __init__(self, unit_code: str, session: Session):
+    def __init__(self, code: str, session: Session, id_: int) -> None:
 
-        if not isinstance(unit_code, str):
-            raise TypeError('unit_code must be of type str')
-
-        self._unit_code = unit_code
+        assert isinstance(session, Session)
         self._session = session
+        super().__init__(code, id_)
 
         return
 
-    def _retrieve(self) -> None:
+    @classmethod
+    def retrieve(self) -> T:
         raise NotImplementedError
