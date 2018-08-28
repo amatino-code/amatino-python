@@ -20,7 +20,7 @@ class ConstrainedString:
 
     MAX_ERR = "{name} exceeds maximum length of {max_char}"
     MIN_ERR = "{name} below minimum length of {min_char}"
-    
+
     def __init__(
         self,
         string: str,
@@ -43,14 +43,14 @@ class ConstrainedString:
 
         self._string = string
         self._name = name
-        
+
         if min_length is None:
             return
 
         if len(string) < min_length:
             error = self.MIN_ERR.format(name=name, min_char=str(min_length))
             raise ConstraintError(error)
-        
+
         return
 
     def __str__(self) -> str:
