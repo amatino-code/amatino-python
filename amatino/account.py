@@ -8,15 +8,22 @@ from amatino.session import Session
 from amatino.am_type import AMType
 from amatino.global_unit import GlobalUnit
 from amatino.custom_unit import CustomUnit
+from amatino.denomination import Denomination
 from amatino.color import Color
 from typing import TypeVar
 from typing import Optional
 from typing import Type
 from typing import Any
+from typing import List
 from amatino.internal.immutable import Immutable
 from amatino.internal.encodable import Encodable
 from amatino.internal.api_request import ApiRequest
 from amatino.internal.constrained_string import ConstrainedString
+from amatino.internal.data_package import DataPackage
+from amatino.internal.http_method import HTTPMethod
+from amatino.internal.url_parameters import UrlParameters
+from amatino.internal.url_target import UrlTarget
+from amatino.api_error import ApiError
 
 T = TypeVar('T', bound='Account')
 
@@ -30,6 +37,7 @@ class Account:
     PATH = '/accounts'
     MAX_DESCRIPTION_LENGTH = 1024
     MAX_NAME_LENGTH = 1024
+    URL_KEY = 'account_id'
 
     def __init__(
         self,
@@ -39,6 +47,7 @@ class Account:
         name: str,
         am_type: AMType,
         description: str,
+        parent_account_id: int,
         global_unit_id: Optional[int],
         custom_unit_id: Optional[int],
         counterparty_id: Optional[str],
@@ -51,6 +60,7 @@ class Account:
         self._name = name
         self._am_type = am_type
         self._description = description
+        self._parent_account_id = parent_account_id
         self._global_unit_id = global_unit_id
         self._custom_unit_id = custom_unit_id
         self._counterparty_id = counterparty_id
@@ -68,90 +78,153 @@ class Account:
     custom_unit_id: Optional[int] = Immutable(lambda s: s._custom_unit_id)
     counterparty_id: Optional[str] = Immutable(lambda s: s._counterparty_id)
     color: Color = Immutable(lambda s: s._color)
+    parent_id: int = Immutable(lambda s: s._parent_account_id)
 
     @classmethod
-    def create_with_global_unit(cls: Type[T]):
-        raise NotImplementedError
-
-    @classmethod
-    def create_with_custom_unit(cls: Type[T]):
-        raise NotImplementedError
-
-    @classmethod
-    def _create(
+    def create(
         cls: Type[T],
+        session: Session,
+        entity: Entity,
         name: str,
         description: Optional[str],
         am_type: AMType,
-        global_unit: Optional[GlobalUnit],
-        custom_unit: Optional[CustomUnit],
+        parent: Optional[T],
+        denomination: Denomination,
         counter_party: Optional[Entity],
         color: Optional[Color]
     ) -> T:
 
-        raise NotImplementedError
+        arguments = Account.CreateArguments(
+            name,
+            description,
+            am_type,
+            parent,
+            denomination,
+            counter_party,
+            color
+        )
+
+        data = DataPackage.from_object(arguments)
+
+        request = ApiRequest(
+            path=Account.PATH,
+            method=HTTPMethod.POST,
+            session_credentials=session._credentials(),
+            data=data
+        )
+
+        account = cls._decode(session, entity, request.response_data)
+
+        return account
 
     @classmethod
-    def retrieve(cls: Type[T]):
-        raise NotImplementedError
+    def retrieve(
+        cls: Type[T],
+        session: Session,
+        entity: Entity,
+        account_id: int
+    ) -> T:
+        """
+        Return an existing Account
+        """
+        url_parameters = UrlParameters(
+            entity_id=entity.id_,
+            targets=UrlTarget(key=Account.URL_KEY, value=str(account_id))
+        )
 
-    def update(self):
-        raise NotImplementedError
+        request = ApiRequest(
+            account=Account.PATH,
+            method=HTTPMethod.GET,
+            session_credentials=session._credentials(),
+            data=None,
+            url_parameters=url_parameters
+        )
+
+        account = cls._decode(session, entity, request.response_data)
+
+        return account
+
+    def update(
+        self,
+        name: str,
+        am_type: AMType,
+        parent: Optional[T],
+        description: Optional[str],
+        denomination: Denomination,
+        counterparty: Optional[Entity],
+        color: Optional[Color]
+    ) -> T:
+        """
+        Update this Account with new metadata.
+        """
+
+        arguments = Account.UpdateArguments(
+            self.id_,
+            name,
+            am_type,
+            parent,
+            description,
+            denomination,
+            counterparty,
+            color
+        )
+
+        data = DataPackage.from_object(arguments)
+
+        request = ApiRequest(
+            path=Account.PATH,
+            method=HTTPMethod.PUT,
+            session_credentials=self.session._credentials(),
+            data=data
+        )
+
+        account = Account._decode(
+            self.session,
+            self.entity,
+            request.response_data
+        )
+
+        if account.id_ != self.id_:
+            raise ApiError('Returned Account ID does not match request ID')
+
+        self._name = account.name
+        self._am_type = account.am_type
+        self._description = account.description
+        self._parent_account_id = account.parent_id
+        self._global_unit_id = account.global_unit_id
+        self._custom_unit_id = account.custom_unit_id
+        self._counterparty_id = account.counterparty_id
+        self._color = account.color
+
+        del account
+
+        return self
 
     def delete(self):
         raise NotImplementedError
 
     class CreateArguments(Encodable):
-        """
-        """
         def __init__(
             self,
             name: str,
             description: Optional[str],
             am_type: AMType,
             parent: Optional[T],
-            global_unit: Optional[GlobalUnit],
-            custom_unit: Optional[CustomUnit],
+            denomination: Denomination,
             counter_party: Optional[Entity],
             color: Optional[Color]
         ) -> None:
 
-            self._name = ConstrainedString(
-                name,
-                'name',
-                Account.MAX_NAME_LENGTH
-            )
-
-            self._description = ConstrainedString(
-                description,
-                'description',
-                Account.MAX_DESCRIPTION_LENGTH
-            )
+            self._name = Account._Name(name)
+            self._description = Account._Description(description)
 
             if not isinstance(am_type, AMType):
                 raise TypeError('am_type must be of type `AMType`')
 
             self._type: AMType = am_type
-
-            if parent and not isinstance(parent, Account):
-                raise TypeError('parent must be of type `Account`')
-
-            self._parent: Optional[Account] = parent
-
-            if global_unit is not None and custom_unit is not None:
-                raise AssertionError('Both global & custom unit supplied')
-
-            if global_unit is None and custom_unit is None:
-                raise AssertionError('Neither global nor custom unit supplied')
-
-            if global_unit and not isinstance(global_unit, GlobalUnit):
-                raise TypeError('global_unit must be of type `GlobalUnit`')
-
-            if custom_unit and not isinstance(custom_unit, CustomUnit):
-                raise TypeError('custom_unit must be of type `CustomUnit')
-
-            self._global_unit: Optional[GlobalUnit] = global_unit
-            self._custom_unit: Optional[CustomUnit] = custom_unit
+            self._parent = Account._Parent(parent)
+            self._global_unit = Account._GlobalUnit(denomination)
+            self._custom_unit = Account._CustomUnit(denomination)
 
             if counter_party and not isinstance(counter_party, Entity):
                 raise TypeError('counter_party must be of type `Entity`')
@@ -167,18 +240,6 @@ class Account:
 
         def serialise(self) -> Any:
 
-            parent_id = None
-            if self._parent is not None:
-                parent_id = self._parent.id_
-
-            global_unit_id = None
-            if self._global_unit:
-                global_unit_id = self._global_unit.id_
-
-            custom_unit_id = None
-            if self._custom_unit:
-                custom_unit_id = self._custom_unit.id_
-
             counterparty_id = None
             if self._counterparty:
                 counterparty_id = self._counterparty.id_
@@ -188,12 +249,192 @@ class Account:
                 color_code = str(self._color)
 
             data = {
-                'name': str(self._name),
+                'name': self._name.serialise(),
                 'type': self._type.beep,
-                'parent_account_id': parent_id,
+                'description': self._description.serialise(),
+                'parent_account_id': self._parent.serialise(),
                 'counterparty_entity_id': counterparty_id,
-                'global_unit_id': global_unit_id,
-                'custom_unit_id': custom_unit_id,
+                'global_unit_id': self._global_unit.serialise(),
+                'custom_unit_id': self._custom_unit.serialise(),
                 'color': color_code
             }
             return data
+
+    @classmethod
+    def _decode(
+        cls: Type[T],
+        session: Session,
+        entity: Entity,
+        data: List[dict]
+    ) -> T:
+
+        return cls._decode_many(session, entity, data)[0]
+
+    @classmethod
+    def _decode_many(
+        cls: Type[T],
+        session: Session,
+        entity: Entity,
+        data: List[dict]
+    ) -> List[T]:
+
+        if not isinstance(data, list):
+            raise ApiError('Unexpected non-list data returned')
+
+        if len(data) < 1:
+            raise ApiError('Unexpected empty response data')
+
+        def decode(data: dict) -> T:
+            if not isinstance(data, dict):
+                raise ApiError('Unexpected non-dict data returned')
+            try:
+                account = cls(
+                    session=session,
+                    entity=entity,
+                    account_id=data['account_id'],
+                    name=data['name'],
+                    am_type=AMType(data['type']),
+                    description=data['description'],
+                    parent_account_id=data['parent_account_id'],
+                    global_unit_id=data['global_unit_id'],
+                    custom_unit_id=data['custom_unit_id'],
+                    counterparty_id=data['counterparty_entity_id'],
+                    color=Color.from_hex_string(data['color'])
+                )
+            except KeyError as error:
+                message = 'Expected key "{key}" missing from response data'
+                message.format(key=error.args[0])
+                raise ApiError(message)
+
+            return account
+
+        accounts = [decode(a) for a in data]
+
+        return accounts
+
+    class UpdateArguments(Encodable):
+        def __init__(
+            self,
+            account_id: int,
+            name: str,
+            am_type: AMType,
+            parent: Optional[T],
+            description: Optional[str],
+            denomination: Denomination,
+            counterparty: Optional[Entity],
+            color: Optional[Color]
+        ) -> None:
+
+            if not isinstance(account_id, int):
+                raise TypeError('account_id must be of type `int`')
+
+            self._account_id = account_id
+
+            self._name = Account._Name(name)
+            self._description = Account._Description(description)
+            self._parent = Account._Parent(parent)
+
+            if not isinstance(am_type, AMType):
+                raise TypeError('am_type must be of type `AMType`')
+
+            self._type = am_type
+            self._global_unit = Account._GlobalUnit(denomination)
+            self._custom_unit = Account._CustomUnit(denomination)
+
+            if (
+                    counterparty is not None
+                    and not isinstance(counterparty, Entity)
+            ):
+                raise TypeError('counterparty must be of type `Entity`')
+
+            self._counterparty = counterparty
+
+            if color is not None and not isinstance(color, Color):
+                raise TypeError('color must be of type `Color`')
+
+            self._color = color
+
+            return
+
+        def serialise(self) -> Any:
+
+            data = {
+                'name': self._name.serialise(),
+                'account_id': self._account_id,
+                'description': self._description.serialise(),
+                'type': self._type.value,
+                'parent': self._parent.serialise()
+            }
+            return data
+
+    class _Name(Encodable):
+        def __init__(self, string: str) -> None:
+            if not isinstance(string, str):
+                raise TypeError('name must be of type `str`')
+            self._name = ConstrainedString(
+                string,
+                'name',
+                Account.MAX_NAME_LENGTH
+            )
+            return
+
+        def serialise(self) -> str:
+            return str(self._name)
+
+    class _Description(Encodable):
+        def __init__(self, string: Optional[str]) -> None:
+            if string is not None and not isinstance(string, str):
+                raise TypeError('description must be of type `str` or None')
+            self._description = ConstrainedString(
+                string,
+                'description',
+                Account.MAX_DESCRIPTION_LENGTH
+            )
+            return
+
+        def serialise(self) -> str:
+            return str(self._description)
+
+    class _Parent(Encodable):
+        def __init__(self, parent: Optional[T]) -> None:
+            if parent is not None and not isinstance(parent, Account):
+                raise TypeError('parent must be of type `Account`')
+            self._parent_id = None
+            if parent is not None:
+                self._parent_id = parent.id_
+            return
+
+        def serialise(self) -> Optional[int]:
+            return self._parent_id
+
+    class _CustomUnit(Encodable):
+        def __init__(self, denomination: Denomination) -> None:
+
+            if not isinstance(denomination, Denomination):
+                raise TypeError('denomination must be of type `Denomination`')
+
+            self._custom_unit_id: Optional[int] = None
+
+            if isinstance(denomination, CustomUnit):
+                self._custom_unit_id = denomination.id_
+
+            return
+
+        def serialise(self) -> Optional[int]:
+            return self._custom_unit_id
+
+    class _GlobalUnit(Encodable):
+        def __init__(self, denomination: Denomination) -> None:
+
+            if not isinstance(denomination, Denomination):
+                raise TypeError('denomination must be of type `Denomination`')
+
+            self._global_unit_id: Optional[int] = None
+
+            if isinstance(denomination, GlobalUnit):
+                self._global_unit_id = denomination.id_
+
+            return
+
+        def serialise(self) -> Optional[int]:
+            return self._global_unit_id

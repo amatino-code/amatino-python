@@ -13,7 +13,7 @@ from amatino.constraint_error import ConstraintError
 
 class ConstrainedString:
     """
-    A string whose maximum, and optionally minimum, length is resricted. Throws
+    A string whose maximum, and optionally minimum, length is restricted. Throws
     TypeError if supplied with something other than a `str`, and ConstraintError
     if a constrained is violated.
     """
