@@ -16,8 +16,7 @@ class UrlTarget:
         if (
                 not isinstance(value, str)
                 and not isinstance(value, int)
-            
-            ):
+        ):
             raise AssertionError('Value must be of type int or str')
 
         self.key = key
