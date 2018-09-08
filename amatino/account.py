@@ -34,10 +34,10 @@ class Account:
     an Account might represent a bank account, income from a particular client,
     or company equity. Many Accounts together compose an Entity.
     """
-    PATH = '/accounts'
+    _PATH = '/accounts'
     MAX_DESCRIPTION_LENGTH = 1024
     MAX_NAME_LENGTH = 1024
-    URL_KEY = 'account_id'
+    _URL_KEY = 'account_id'
 
     def __init__(
         self,
@@ -107,7 +107,7 @@ class Account:
         data = DataPackage.from_object(arguments)
 
         request = ApiRequest(
-            path=Account.PATH,
+            path=Account._PATH,
             method=HTTPMethod.POST,
             session_credentials=session._credentials(),
             data=data
@@ -129,11 +129,11 @@ class Account:
         """
         url_parameters = UrlParameters(
             entity_id=entity.id_,
-            targets=UrlTarget(key=Account.URL_KEY, value=str(account_id))
+            targets=UrlTarget(key=Account._URL_KEY, value=str(account_id))
         )
 
         request = ApiRequest(
-            account=Account.PATH,
+            path=Account._PATH,
             method=HTTPMethod.GET,
             session_credentials=session._credentials(),
             data=None,
@@ -172,7 +172,7 @@ class Account:
         data = DataPackage.from_object(arguments)
 
         request = ApiRequest(
-            path=Account.PATH,
+            path=Account._PATH,
             method=HTTPMethod.PUT,
             session_credentials=self.session._credentials(),
             data=data
