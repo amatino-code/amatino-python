@@ -144,7 +144,7 @@ class Entity:
         request = ApiRequest(
             path=Entity.PATH,
             method=HTTPMethod.GET,
-            session_credentials=session._credentials(),
+            credentials=session,
             data=None,
             url_parameters=url_parameters,
             debug=False

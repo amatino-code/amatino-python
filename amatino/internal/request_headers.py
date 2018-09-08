@@ -6,9 +6,9 @@ Author: hugh@amatino.io
 This module is intended to be private, used indirectly
 by public classes, and should not be used directly.
 """
-from amatino.internal.session_credentials import SessionCredentials
 from amatino.internal.data_package import DataPackage
 from amatino.internal.signature import Signature
+from amatino.internal.credentials import Credentials
 
 
 class RequestHeaders:
@@ -22,7 +22,7 @@ class RequestHeaders:
     def __init__(
         self,
         path: str,
-        session_credentials: SessionCredentials = None,
+        credentials: Credentials = None,
         request_data: DataPackage = None
     ) -> None:
 
@@ -31,7 +31,7 @@ class RequestHeaders:
         if request_data is not None:
             self._headers['content-type'] = 'application/json'
 
-        if session_credentials is None:
+        if credentials is None:
             return
 
         json_data = None
@@ -39,13 +39,13 @@ class RequestHeaders:
             json_data = request_data.as_object()
 
         signature = Signature(
-            api_key=session_credentials.api_key,
+            api_key=credentials.api_key,
             path=path,
             json_data=json_data
         )
 
         self._headers['X-Signature'] = signature.string()
-        self._headers['X-Session-ID'] = session_credentials.session_id
+        self._headers['X-Session-ID'] = credentials.session_id
 
         return
 

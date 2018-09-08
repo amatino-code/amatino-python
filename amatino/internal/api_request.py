@@ -10,7 +10,7 @@ from json import loads
 from urllib.request import Request
 from urllib.request import urlopen
 from urllib.request import HTTPError
-from amatino.internal.session_credentials import SessionCredentials
+from amatino.internal.credentials import Credentials
 from amatino.internal.data_package import DataPackage
 from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.request_headers import RequestHeaders
@@ -33,7 +33,7 @@ class ApiRequest:
         self,
         path: str,
         method: HTTPMethod,
-        session_credentials: Optional[SessionCredentials] = None,
+        credentials: Optional[Credentials] = None,
         data: Optional[DataPackage] = None,
         url_parameters: Optional[UrlParameters] = None,
         debug: bool = False
@@ -41,8 +41,8 @@ class ApiRequest:
 
         self.response_data = None
 
-        if session_credentials is not None:
-            assert isinstance(session_credentials, SessionCredentials)
+        if credentials is not None:
+            assert isinstance(credentials, Credentials)
 
         if data is not None:
             assert isinstance(data, DataPackage)
@@ -63,7 +63,7 @@ class ApiRequest:
         if url_parameters is not None:
             url += url_parameters.parameter_string()
 
-        headers = RequestHeaders(path, session_credentials, data)
+        headers = RequestHeaders(path, credentials, data)
         request = Request(
             url=url,
             data=request_data,

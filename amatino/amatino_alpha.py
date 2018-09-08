@@ -173,7 +173,7 @@ class AmatinoAlpha:
         request = ApiRequest(
             path,
             method,
-            session_credentials=self._session._credentials(),
+            credentials=self._session,
             data=data_package,
             url_parameters=UrlParameters(raw_query_string=query_string)
         )

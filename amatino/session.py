@@ -7,18 +7,18 @@ from amatino.internal.session_create_arguments import NewSessionArguments
 from amatino.internal.data_package import DataPackage
 from amatino.internal.api_request import ApiRequest
 from amatino.api_error import ApiError
-from amatino.internal.session_credentials import SessionCredentials
 from typing import TypeVar
 from typing import Type
 from typing import Any
 from typing import Optional
 from amatino.internal.immutable import Immutable
 from amatino.internal.http_method import HTTPMethod
+from amatino.internal.credentials import Credentials
 
 T = TypeVar('T', bound='Session')
 
 
-class Session:
+class Session(Credentials):
     """
     Sessions are the keys to the Amatino kingdom. All requests to the Amatino
     API, except those requests to create Sessions themselves, must include two
@@ -128,9 +128,3 @@ class Session:
         to 'logging out' the underlying User.
         """
         raise NotImplementedError
-
-    def _credentials(self) -> SessionCredentials:
-        """
-        Return _SessionCredentials from the attributes of this Session
-        """
-        return SessionCredentials(self.api_key, self.session_id)
