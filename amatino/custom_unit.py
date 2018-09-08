@@ -9,10 +9,18 @@ from amatino.global_unit import GlobalUnit
 from amatino.denomination import Denomination
 from typing import TypeVar
 from typing import Optional
+from typing import Type
+from typing import List
+from typing import Any
 from amatino.internal.immutable import Immutable
 from amatino.internal.constrained_string import ConstrainedString
 from amatino.internal.constrained_integer import ConstrainedInteger
 from amatino.internal.encodable import Encodable
+from amatino.internal.url_target import UrlTarget
+from amatino.internal.url_parameters import UrlParameters
+from amatino.internal.api_request import ApiRequest
+from amatino.internal.http_method import HTTPMethod
+from amatino.api_error import ApiError
 
 T = TypeVar('T', bound='CustomUnit')
 
@@ -35,6 +43,7 @@ class CustomUnit(Denomination):
     MAX_NAME_LENGTH = 1024
     MAX_EXPONENT_VALUE = 6
     MIN_EXPONENT_VALUE = 0
+    _URL_KEY = 'custom_unit_id'
 
     def __init__(
         self,
@@ -64,11 +73,104 @@ class CustomUnit(Denomination):
     priority: int = Immutable(lambda s: s._priority)
     description: str = Immutable(lambda s: s._description)
 
+    @classmethod
     def _create(self) -> None:
         raise NotImplementedError
 
-    def _retrieve(self) -> None:
+    @classmethod
+    def retrieve(
+        cls: Type[T],
+        entity: Entity,
+        session: Session,
+        custom_unit_id: int
+    ) -> T:
+
         raise NotImplementedError
+
+    @classmethod
+    def _retrieve(
+        cls: Type[T],
+        entity: Entity,
+        session: Session,
+        custom_unit_ids: List[int]
+    ) -> T:
+
+        if not isinstance(entity, Entity):
+            raise TypeError('entity must be of type `Entity`')
+
+        if not isinstance(session, Session):
+            raise TypeError('session must be of type `Session')
+
+        key = CustomUnit._URL_KEY
+        targets = [UrlTarget(key, str(i)) for i in custom_unit_ids]
+
+        url_parameters = UrlParameters(
+            entity_id=entity.id_,
+            targets=targets
+        )
+
+        request = ApiRequest(
+            path=CustomUnit._PATH,
+            method=HTTPMethod.GET,
+            credentials=session,
+            data=None,
+            url_parameters=url_parameters
+        )
+
+        unit = cls._decode(
+            session,
+            entity,
+            request.response_data
+        )
+
+        return unit
+
+    @classmethod
+    def _decode(
+        cls: Type[T],
+        session: Session,
+        entity: Entity,
+        data: Any
+    ) -> T:
+        return cls._decodeMany(session, entity, data)[0]
+
+    @classmethod
+    def _decodeMany(
+        cls: Type[T],
+        session: Session,
+        entity: Entity,
+        data: Any
+    ) -> List[T]:
+        if not isinstance(data, list):
+            raise ApiError('Unexpected non-list data returned')
+        
+        if len(data) < 1:
+            raise ApiError('Unexpected empty response data')
+
+        def decode(data: dict) -> T:
+            if not isinstance(data, dict):
+                raise ApiError('Unexpected non-dict data returned')
+            try:
+                unit = cls(
+                    session=session,
+                    entity=entity,
+                    id_=data['custom_unit_id'],
+                    code=data['code'],
+                    name=data['name'],
+                    priority=data['priority'],
+                    description=data['description'],
+                    exponent=data['exponent']
+                )
+            except KeyError as error:
+                message = 'Expected key "{key}" missing from response data'
+                message.format(key=error.args[0])
+                raise ApiError(message)
+
+            return unit
+
+        units = [decode(u) for u in data]
+
+        return units
 
     def update(
         self,
@@ -99,8 +201,6 @@ class CustomUnit(Denomination):
 
     class CreationArguments(Encodable):
         """
-        Private - Not intended to be used directly.
-
         Used by instances of class CustomUnit to validate arguments provided
         for the creation of a new Custom Unit
         """
