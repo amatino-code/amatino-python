@@ -5,6 +5,7 @@ Author: hugh@amatino.io
 """
 from amatino.amatino_error import AmatinoError
 
+
 class ConstraintError(AmatinoError):
     """
     A class of errors thrown when input data violates some constraint. For

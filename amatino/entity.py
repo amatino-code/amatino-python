@@ -5,16 +5,20 @@ Author: hugh@amatino.io
 """
 from amatino import Session
 from amatino.region import Region
-from amatino.internal.entity_create_arguments import NewEntityArguments
-from amatino.internal.entity_update_arguments import EntityUpdateArguments
+from amatino.user import User
+from amatino.permissions_graph import PermissionsGraph
 from amatino.internal.api_request import ApiRequest
 from amatino.internal.data_package import DataPackage
 from amatino.internal.http_method import HTTPMethod
 from amatino.internal.url_parameters import UrlParameters
+from amatino.internal.constrained_string import ConstrainedString
+from amatino.internal.encodable import Encodable
 from amatino.amatino_error import AmatinoError
 from typing import TypeVar
 from typing import Optional
 from typing import Type
+from typing import Dict
+from typing import Any
 from amatino.internal.immutable import Immutable
 
 T = TypeVar('T', bound='Entity')
@@ -29,8 +33,8 @@ class Entity:
     of companies, a project, or even a person.
     """
     PATH = '/entities'
-    MAX_NAME_LENGTH = NewEntityArguments.MAX_NAME_LENGTH
-    MAX_DESCRIPTION_LENGTH = NewEntityArguments.MAX_DESCRIPTION_LENGTH
+    MAX_NAME_LENGTH = 1024
+    MAX_DESCRIPTION_LENGTH = 4096
 
     def __init__(
         self,
@@ -41,7 +45,7 @@ class Entity:
         region_id: int,
         owner_id: int,
         active: bool,
-        permissions_graph: dict
+        permissions_graph: PermissionsGraph
     ) -> None:
 
         self._session = session
@@ -73,7 +77,7 @@ class Entity:
         region: Optional[Region] = None
     ) -> T:
 
-        new_entity_arguments = NewEntityArguments(
+        new_entity_arguments = cls.CreateArguments(
             name,
             description,
             region
@@ -154,57 +158,43 @@ class Entity:
 
         return entity
 
-    def _create(self) -> None:
-        raise NotImplementedError
-
-    def _retrieve(self) -> None:
-        raise NotImplementedError
-
     def update(
         self,
-        name: str,
-        description: str,
-        owner_id: int,
-        permissions_graph: dict
-    ) -> None:
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        owner: Optional[User] = None,
+        permissions_graph: Optional[PermissionsGraph] = None
+    ) -> 'Entity':
         """
         Modify data describing this Entity. Returns this Entity, the Entity
         instance is updated-in-place.
         """
 
-        raise NotImplementedError
+        owner_id = None
+        if owner is not None:
+            owner_id = owner.id_
 
-        #update_arguments = EntityUpdateArguments(
-        #    entity_id=self._entity_id,
-        #    name=name,
-        #    description=description,
-        #    owner_id=owner_id,
-        #    permissions_graph=permissions_graph
-        #)
+        update_arguments = Entity.UpdateArguments(
+            self,
+            name=name,
+            description=description,
+            owner_id=owner_id,
+            permissions_graph=permissions_graph
+        )
 
-        #data_package = DataPackage.from_object(data=update_arguments)
+        data_package = DataPackage.from_object(data=update_arguments)
 
-        #request = ApiRequest(
-        #    path=Entity.PATH,
-        #    method=HTTPMethod.PUT,
-        #    session_credentials=self._session._credentials(),
-        #    data=data_package,
-        #    url_parameters=None
-        #)
+        request = ApiRequest(
+            path=Entity.PATH,
+            method=HTTPMethod.PUT,
+            session_credentials=self._session._credentials(),
+            data=data_package,
+            url_parameters=None
+        )
 
-        #updated_entity = Entity._decode(request.response_data, self.session)
+        updated_entity = Entity._decode(request.response_data, self.session)
 
-        #assert self._entity_id == updated_entity.id_
-        #self._name = updated_entity.name
-        #self._description = updated_entity.description
-        #self._region_id = updated_entity.region_id
-        #self._owner_id = updated_entity.region_id
-        #self._active = updated_entity.active
-        #self._permissions_graph = updated_entity.permissions_graph
-
-        #del updated_entity
-
-        #return None
+        return updated_entity
 
     def delete(self) -> None:
         """
@@ -219,3 +209,114 @@ class Entity:
         is updated-in-place.
         """
         raise NotImplementedError
+
+    class _Description(ConstrainedString):
+        def __init__(self, description: str) -> None:
+            super().__init__(
+                description,
+                'description',
+                Entity.MAX_DESCRIPTION_LENGTH
+            )
+            return
+
+    class _Name(ConstrainedString):
+        def __init__(self, name: str) -> None:
+            super().__init__(
+                name,
+                'name',
+                Entity.MAX_NAME_LENGTH
+            )
+            return
+
+    class UpdateArguments(Encodable):
+        def __init__(
+            self,
+            entity: T,
+            name: Optional[str] = None,
+            description: Optional[str] = None,
+            owner_id: Optional[int] = None,
+            permissions_graph: Optional[PermissionsGraph] = None
+        ) -> None:
+
+            if not isinstance(entity, Entity):
+                raise TypeError('entity must be of type `Entity`')
+
+            self._entity = entity
+
+            if name:
+                self._name = Entity._Name(name).serialise()
+            else:
+                self._name = entity.name
+
+            if description:
+                self._description = Entity._Description.serialise()
+            else:
+                self._description = entity._description
+
+            if owner_id:
+                if not isinstance(owner_id, int):
+                    raise TypeError('owner_id must be of type `int`')
+                self._owner_id = owner_id
+            else:
+                self._owner_id = entity.owner_id
+
+            if permissions_graph:
+                if not isinstance(permissions_graph, PermissionsGraph):
+                    raise TypeError(
+                        'graph must be of type `PermissionsGraph`'
+                    )
+                self._permissions_graph = permissions_graph
+            else:
+                self._permissions_graph = entity.permissions_graph
+
+            return
+
+        def serialise(self) -> Dict[str, Any]:
+            data = {
+                'name': self._name,
+                'description': self._description,
+                'entity_id': self._entity.id_,
+                'owner': self._owner_id,
+                'permissions_graph': self.permissions_graph.serialise()
+            }
+            return data
+
+    class CreateArguments(Encodable):
+        def __init__(
+            self,
+            name: str,
+            description: Optional[str],
+            region: Optional[Region] = None
+        ) -> None:
+
+            self._name = ConstrainedString(
+                name,
+                'name',
+                self.MAX_NAME_LENGTH
+            )
+
+            self._description = ConstrainedString(
+                description or '',
+                'description',
+                Entity.MAX_DESCRIPTION_LENGTH
+            )
+
+            if region is not None and not isinstance(region, Region):
+                raise TypeError('region must be of type `Region`')
+
+            self._region = region
+
+            return
+
+        def serialise(self) -> Dict[str, Any]:
+            region_id = None
+            if isinstance(self._region, Region):
+                region_id = self._region.id_
+
+            data = {
+                'name': self._name.serialise(),
+                'description': self._description.serialise(),
+                'storage_region': region_id
+            }
+
+            return data
