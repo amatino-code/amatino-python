@@ -82,6 +82,7 @@ class Transaction:
     global_unit_id = Immutable(lambda s: s._global_unit_id)
     custom_unit_id = Immutable(lambda s: s._custom_unit_id)
     global_unit = Immutable(lambda s: GlobalUnit.retrieve(s.global_unit_id))
+    denomination = Immutable(lambda s: s._denomination())
 
     @classmethod
     def create(
@@ -171,11 +172,50 @@ class Transaction:
 
         return transactions
 
-    def update(self) -> None:
-        """
-        Replace existing transaction data with supplied data.
-        """
-        raise NotImplementedError
+    def update(
+        self: T,
+        time: Optional[datetime] = None,
+        entries: Optional[List[Entry]] = None,
+        denomination: Optional[Denomination] = None,
+        description: Optional[str] = None
+    ) -> T:
+        """Replace existing transaction data with supplied data."""
+
+        arguments = Transaction.UpdateArguments(
+            self,
+            time,
+            entries,
+            denomination,
+            description
+        )
+
+        data = DataPackage.from_object(arguments)
+
+        request = ApiRequest(
+            path=Transaction._PATH,
+            method=HTTPMethod.PUT,
+            credentials=self.session,
+            data=data
+        )
+
+        transaction = Transaction._decode(
+            self.session,
+            self.entity,
+            request.response_data
+        )
+
+        if transaction.id_ != self.id_:
+            raise ApiError('Mismatched response Trasaction ID - Fatal')
+
+        self._time = transaction.time
+        self._description = transaction.description
+        self._entries = transaction.entries
+        self._global_unit_id = transaction.global_unit_id
+        self._custom_unit_id = transaction.custom_unit_id
+
+        del transaction
+
+        return self
 
     def delete(self) -> None:
         """
@@ -194,6 +234,10 @@ class Transaction:
         """Return a list of versions of this Transaction"""
         raise NotImplementedError
 
+    def _denomination(self) -> Denomination:
+        """Return the Denomination of this Transaction"""
+        raise NotImplementedError
+
     class CreateArguments(Encodable):
         def __init__(
             self,
@@ -209,17 +253,10 @@ class Transaction:
             if not isinstance(denomination, Denomination):
                 raise TypeError('denomination must be of type `Denomination`')
 
-            if description is None:
-                description = ''
-
             self._time = AmatinoTime(time)
             self._denomination = denomination
             self._entries = Transaction._Entries(entries)
-            self._description = ConstrainedString(
-                description,
-                'description',
-                Transaction.MAX_DESCRIPTION_LENGTH
-            )
+            self._description = Transaction._Description(description)
 
             return
 
@@ -239,6 +276,77 @@ class Transaction:
                 'entries': self._entries.serialise()
             }
             return data
+
+    class UpdateArguments(Encodable):
+        def __init__(
+            self,
+            transaction: T,
+            time: Optional[datetime] = None,
+            entries: Optional[List[Entry]] = None,
+            denomination: Optional[Denomination] = None,
+            description: Optional[str] = None
+        ) -> None:
+
+            if not isinstance(transaction, Transaction):
+                raise TypeError('transaction must be of type `Transaction`')
+
+            if time:
+                if not isinstance(time, datetime):
+                    raise TypeError('time must be of type `datetime`')
+                self._ = time
+            else:
+                self._time = transaction.time
+
+            if entries:
+                self._entries = Transaction._Entries(entries)
+            else:
+                self._entries = Transaction._Entries(transaction.entries)
+
+            if denomination:
+                if not isinstance(denomination, Denomination):
+                    raise TypeError(
+                        'demomination must be of type `Denomination`'
+                    )
+                self._denomination = denomination
+            else:
+                self._denomination = transaction.denomination
+
+            if description:
+                self._description = Transaction._Description(description)
+            else:
+                self._description = Transaction._Description(
+                    transaction.description
+                )
+
+            return
+
+        def serialise(self) -> Dict[str, Any]:
+            if isinstance(self._denomination, CustomUnit):
+                custom_unit_id = self._denomination.id_
+                global_unit_id = None
+            else:
+                custom_unit_id = None
+                global_unit_id = self._denomination.id_
+
+            data = {
+                'transaction_time': self._time.serialise(),
+                'custom_unit_denomination': custom_unit_id,
+                'global_unit_denomination': global_unit_id,
+                'description': self._description.serialise(),
+                'entries': self._entries.serialise()
+            }
+            return data
+
+    class _Description(ConstrainedString):
+        def __init__(self, string: Optional[str] = None) -> None:
+            if string is None:
+                string = ''
+            super().__init__(
+                string,
+                'description',
+                Transaction.MAX_DESCRIPTION_LENGTH
+            )
+            return
 
     class _Entries(Encodable):
         def __init__(self, entries: List[Entry]) -> None:
