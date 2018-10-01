@@ -4,6 +4,18 @@ User Module
 Author: hugh@amatino.io
 """
 from amatino.internal.immutable import Immutable
+from amatino.session import Session
+from amatino.internal.url_parameters import UrlParameters
+from amatino.internal.url_target import UrlTarget
+from amatino.internal.api_request import ApiRequest
+from amatino.HTTPMethod import HTTPMethod
+from typing import TypeVar
+from typing import Type
+from typing import Optional
+from typing import List
+from typing import Any
+
+T = TypeVar('T', bound='User')
 
 
 class User:
@@ -37,9 +49,12 @@ class User:
     Use plan, creating additional Users incurs no direct marginal cost. You can
     change your plan at any time.
     """
+    _URL_KEY = 'user_id'
+    _PATH = '/user'
 
     def __init__(
         self,
+        session: Session,
         id_: int,
         email: str,
         name: str,
@@ -60,3 +75,58 @@ class User:
     name = Immutable(lambda s: s._name)
     handle = Immutable(lambda s: s._handle)
     avatar_url = Immutable(lambda s: s._avatar_url)
+
+    @classmethod
+    def retrieve_authenticated_user(cls: Type[T], session: Session) -> T:
+        """Return the User authenticated by the supplied Session"""
+        return cls._retrieve_many(session, None)[0]
+
+    @classmethod
+    def retrieve(cls: Type[T], session: Session, id_: int) -> T:
+        """Return the User with supplied ID"""
+        if not isinstance(id_, int):
+            raise TypeError('id_ must be of type `int`')
+        return cls.retrieve_many(session, [id_])[0]
+
+    @classmethod
+    def retrieve_many(
+        cls: Type[T],
+        session: Session,
+        ids: List[int]
+    ) -> List[T]:
+        """Return a list of Users"""
+        if not isinstance(ids, list) or False in [
+            isinstance(i, int) for i in ids
+        ]:
+            raise TypeError('ids must be of type List[int]')
+        return cls._retrieve_many(session, ids)
+
+    @classmethod
+    def _retrieve_many(
+        cls: Type[T],
+        session: Session,
+        ids: Optional[List[int]] = None
+    ) -> List[T]:
+        """Return a list of users"""
+
+        parameters = None
+        if ids is not None:
+            targets = UrlTarget.from_many_integers(cls._URL_KEY, ids)
+            parameters = UrlParameters.from_targets(targets)
+
+        request = ApiRequest(
+            path=cls._PATH,
+            data=None,
+            credentials=session,
+            method=HTTPMethod.GET,
+            url_parameters=parameters
+        )
+
+        users = cls._decode_many(session, request.response_data)
+
+        return users
+
+    @classmethod
+    def _decode_many(cls: Type[T], session: Session, data: Any) -> List[T]:
+        """Return a list of Users decoded from API response data"""
+        raise NotImplementedError
