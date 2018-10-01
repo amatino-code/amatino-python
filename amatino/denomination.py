@@ -20,6 +20,6 @@ class Denomination:
         self._name = name
         return
 
-    code: str = Immutable(lambda s: s._code)
-    id_: int = Immutable(lambda s: s._id)
-    name: str = Immutable(lambda s: s._name)
+    code = Immutable(lambda s: s._code)
+    id_ = Immutable(lambda s: s._id)
+    name = Immutable(lambda s: s._name)

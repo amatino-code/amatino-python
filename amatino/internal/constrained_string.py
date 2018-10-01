@@ -9,9 +9,10 @@ should not be used directly.
 """
 from typing import Optional
 from amatino.constraint_error import ConstraintError
+from amatino.internal.encodable import Encodable
 
 
-class ConstrainedString:
+class ConstrainedString(Encodable):
     """
     A string whose maximum, and optionally minimum, length is restricted. Throws
     TypeError if supplied with something other than a `str`, and ConstraintError
@@ -54,4 +55,7 @@ class ConstrainedString:
         return
 
     def __str__(self) -> str:
+        return self._string
+
+    def serialise(self) -> str:
         return self._string

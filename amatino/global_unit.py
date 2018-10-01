@@ -18,14 +18,20 @@ class GlobalUnit(Denomination):
 
     Global Units cannot be modified by Amatino users.
     """
-    def __init__(self, code: str, session: Session, id_: int) -> None:
+    def __init__(
+        self,
+        session: Session,
+        code: str,
+        id_: int,
+        name: str
+    ) -> None:
 
         assert isinstance(session, Session)
         self._session = session
-        super().__init__(code, id_)
+        super().__init__(code, id_, name)
 
         return
 
     @classmethod
-    def retrieve(self) -> T:
+    def retrieve(self, id_: int) -> T:
         raise NotImplementedError

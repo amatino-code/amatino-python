@@ -68,17 +68,18 @@ class Account:
 
         return
 
-    session: Session = Immutable(lambda s: s._session)
-    entity: Entity = Immutable(lambda s: s._entity)
-    id_: int = Immutable(lambda s: s._id)
-    name: str = Immutable(lambda s: s._name)
-    am_type: AMType = Immutable(lambda s: s._am_type)
-    description: str = Immutable(lambda s: s._description)
-    global_unit_id: Optional[int] = Immutable(lambda s: s._global_unit_id)
-    custom_unit_id: Optional[int] = Immutable(lambda s: s._custom_unit_id)
-    counterparty_id: Optional[str] = Immutable(lambda s: s._counterparty_id)
-    color: Color = Immutable(lambda s: s._color)
-    parent_id: int = Immutable(lambda s: s._parent_account_id)
+    session = Immutable(lambda s: s._session)
+    entity = Immutable(lambda s: s._entity)
+    id_ = Immutable(lambda s: s._id)
+    name = Immutable(lambda s: s._name)
+    am_type = Immutable(lambda s: s._am_type)
+    description = Immutable(lambda s: s._description)
+    global_unit_id = Immutable(lambda s: s._global_unit_id)
+    custom_unit_id = Immutable(lambda s: s._custom_unit_id)
+    denomination = Immutable(lambda s: s._denomination())
+    counterparty_id = Immutable(lambda s: s._counterparty_id)
+    color = Immutable(lambda s: s._color)
+    parent_id = Immutable(lambda s: s._parent_account_id)
 
     @classmethod
     def create(
@@ -86,12 +87,12 @@ class Account:
         session: Session,
         entity: Entity,
         name: str,
-        description: Optional[str],
         am_type: AMType,
-        parent: Optional[T],
         denomination: Denomination,
-        counter_party: Optional[Entity],
-        color: Optional[Color]
+        description: Optional[str],
+        parent: Optional[T] = None,
+        counter_party: Optional[Entity] = None,
+        color: Optional[Color] = None
     ) -> T:
 
         arguments = Account.CreateArguments(
@@ -109,7 +110,7 @@ class Account:
         request = ApiRequest(
             path=Account._PATH,
             method=HTTPMethod.POST,
-            session_credentials=session._credentials(),
+            credentials=session,
             data=data
         )
 
@@ -135,7 +136,7 @@ class Account:
         request = ApiRequest(
             path=Account._PATH,
             method=HTTPMethod.GET,
-            session_credentials=session._credentials(),
+            credentials=session,
             data=None,
             url_parameters=url_parameters
         )
@@ -145,7 +146,7 @@ class Account:
         return account
 
     def update(
-        self,
+        self: T,
         name: str,
         am_type: AMType,
         parent: Optional[T],
@@ -174,7 +175,7 @@ class Account:
         request = ApiRequest(
             path=Account._PATH,
             method=HTTPMethod.PUT,
-            session_credentials=self.session._credentials(),
+            credentials=self.session,
             data=data
         )
 
@@ -201,6 +202,10 @@ class Account:
         return self
 
     def delete(self):
+        raise NotImplementedError
+
+    def _denomination(self) -> Denomination:
+        """Return the Denomination of this account"""
         raise NotImplementedError
 
     class CreateArguments(Encodable):

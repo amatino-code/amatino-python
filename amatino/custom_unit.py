@@ -143,7 +143,7 @@ class CustomUnit(Denomination):
     ) -> List[T]:
         if not isinstance(data, list):
             raise ApiError('Unexpected non-list data returned')
-        
+
         if len(data) < 1:
             raise ApiError('Unexpected empty response data')
 
