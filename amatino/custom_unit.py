@@ -60,18 +60,12 @@ class CustomUnit(Denomination):
         self._session = session
         self._entity = entity
 
-        self._priority = priority
-        self._description = description
-        self._exponent = exponent
-
-        super().__init__(code, id_, name)
+        super().__init__(code, id_, name, priority, description, exponent)
 
         return
 
     session: Session = Immutable(lambda s: s._session)
     entity: Entity = Immutable(lambda s: s._entity)
-    priority: int = Immutable(lambda s: s._priority)
-    description: str = Immutable(lambda s: s._description)
 
     @classmethod
     def _create(self) -> None:
