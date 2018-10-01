@@ -17,6 +17,8 @@ from amatino.internal.am_time import AmatinoTime
 from amatino.internal.api_request import ApiRequest
 from amatino.internal.data_package import DataPackage
 from amatino.internal.http_method import HTTPMethod
+from amatino.internal.url_target import UrlTarget
+from amatino.internal.url_parameters import UrlParameters
 from amatino.api_error import ApiError
 from typing import TypeVar
 from typing import Optional
@@ -49,6 +51,7 @@ class Transaction:
     """
     _PATH = '/transactions'
     MAX_DESCRIPTION_LENGTH = 1024
+    _URL_KEY = 'transaction_id'
 
     def __init__(
         self,
@@ -115,11 +118,50 @@ class Transaction:
 
         return transaction
 
-    def _create(self) -> None:
-        raise NotImplementedError
+    @classmethod
+    def retrieve(cls: Type[T], session: Session, entity: Entity, id_: int) -> T:
+        """Return a retrieved Transaction"""
+        return cls.retrieve_many(session, entity, [id_])[0]
 
-    def _retrieve(self) -> None:
-        raise NotImplementedError
+    @classmethod
+    def retrieve_many(
+        cls: Type[T],
+        session: Session,
+        entity: Entity,
+        ids: List[int]
+    ) -> List[T]:
+        """Return many retrieved Transactions"""
+
+        if not isinstance(session, Session):
+            raise TypeError('session must be of type `Session`')
+
+        if not isinstance(entity, Entity):
+            raise TypeError('entity must be of type `Entity`')
+
+        if not isinstance(ids, list):
+            raise TypeError('ids must be of type `list`')
+
+        if False in [isinstance(i, int) for i in ids]:
+            raise TypeError('ids must be of type `int`')
+
+        targets = UrlTarget.from_many_integers(Transaction._URL_KEY, ids)
+        parameters = UrlParameters(entity_id=entity.id_, targets=targets)
+
+        request = ApiRequest(
+            path=Transaction._PATH,
+            method=HTTPMethod.GET,
+            credentials=session,
+            data=None,
+            url_parameters=parameters
+        )
+
+        transactions = cls._decode_many(
+            session,
+            entity,
+            request.response_data
+        )
+
+        return transactions
 
     @classmethod
     def _decode(
@@ -178,7 +220,7 @@ class Transaction:
         entries: Optional[List[Entry]] = None,
         denomination: Optional[Denomination] = None,
         description: Optional[str] = None
-    ) -> T:
+    ) -> 'Transaction':
         """Replace existing transaction data with supplied data."""
 
         arguments = Transaction.UpdateArguments(
@@ -207,15 +249,7 @@ class Transaction:
         if transaction.id_ != self.id_:
             raise ApiError('Mismatched response Trasaction ID - Fatal')
 
-        self._time = transaction.time
-        self._description = transaction.description
-        self._entries = transaction.entries
-        self._global_unit_id = transaction.global_unit_id
-        self._custom_unit_id = transaction.custom_unit_id
-
-        del transaction
-
-        return self
+        return transaction
 
     def delete(self) -> None:
         """
@@ -236,7 +270,13 @@ class Transaction:
 
     def _denomination(self) -> Denomination:
         """Return the Denomination of this Transaction"""
-        raise NotImplementedError
+        if self.global_unit_id is not None:
+            return GlobalUnit.retrieve(self.session, self.global_unit_id)
+        return CustomUnit.retrieve(
+            self.entity,
+            self.session,
+            self.custom_unit_id
+        )
 
     class CreateArguments(Encodable):
         def __init__(
