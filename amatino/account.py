@@ -154,7 +154,7 @@ class Account:
         denomination: Denomination,
         counterparty: Optional[Entity],
         color: Optional[Color]
-    ) -> T:
+    ) -> 'Account':
         """
         Update this Account with new metadata.
         """
@@ -188,18 +188,7 @@ class Account:
         if account.id_ != self.id_:
             raise ApiError('Returned Account ID does not match request ID')
 
-        self._name = account.name
-        self._am_type = account.am_type
-        self._description = account.description
-        self._parent_account_id = account.parent_id
-        self._global_unit_id = account.global_unit_id
-        self._custom_unit_id = account.custom_unit_id
-        self._counterparty_id = account.counterparty_id
-        self._color = account.color
-
-        del account
-
-        return self
+        return account
 
     def delete(self):
         raise NotImplementedError
