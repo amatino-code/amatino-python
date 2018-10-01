@@ -9,6 +9,10 @@ by public classes, and should not be used directly.
 from amatino.internal.url_target import UrlTarget
 from typing import Optional
 from typing import List
+from typing import Type
+from typing import TypeVar
+
+T = TypeVar('T', bound='UrlParameters')
 
 
 class UrlParameters:
@@ -41,7 +45,7 @@ class UrlParameters:
                     or False in [isinstance(t, UrlTarget) for t in targets]
                 )
         ):
-            raise TypeError('Targets must be of type [UrlTarget]')
+            raise TypeError('Targets must be of type List[UrlTarget]')
 
         self._parameter_string = ''
 
@@ -64,6 +68,17 @@ class UrlParameters:
             self._parameter_string += '&' + str(target)
 
         return
+
+    @classmethod
+    def from_single_target(
+        cls: Type[T],
+        target: UrlTarget
+    ) -> T:
+
+        if not isinstance(target, UrlTarget):
+            raise TypeError('target must be of type `UrlTarget`')
+
+        return cls(targets=[target])
 
     def __str__(self):
         return self._parameter_string
