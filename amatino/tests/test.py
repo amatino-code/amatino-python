@@ -6,6 +6,7 @@ Author: hugh@amatino.io
 Base class for tests or, when executed as __main__, the entrypoint for the test
 sequence.
 """
+from urllib.error import HTTPError
 from typing import Optional
 from typing import Any
 from os import environ
@@ -79,6 +80,15 @@ class Test:
         if self._passed is not None:
             raise RuntimeError('Attempt to pass/fail a completed test')
         self._passed = result
+
+        if isinstance(note, HTTPError):
+            self._note = 'An HTTP error occured: ' + str(note.code)
+            try:
+                self._note += '. The API returned the following:\n'
+                self._note += note.read().decode('utf-8')
+            except Exception:
+                pass
+            return
 
         if isinstance(note, Exception):
             self._note = traceback.format_exc()

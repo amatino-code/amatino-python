@@ -88,7 +88,7 @@ class Entity:
         request = ApiRequest(
             Entity.PATH,
             HTTPMethod.POST,
-            session._credentials(),
+            session,
             request_data,
             None,
             False
@@ -124,7 +124,9 @@ class Entity:
                 region_id=raw_entity['storage_region'],
                 owner_id=raw_entity['owner'],
                 active=raw_entity['active'],
-                permissions_graph=raw_entity['permissions_graph']
+                permissions_graph=PermissionsGraph(
+                    raw_entity['permissions_graph']
+                )
             )
         except KeyError:
             raise AmatinoError('Unexpected response format, missing a key')
@@ -187,7 +189,7 @@ class Entity:
         request = ApiRequest(
             path=Entity.PATH,
             method=HTTPMethod.PUT,
-            session_credentials=self._session._credentials(),
+            credentials=self._session,
             data=data_package,
             url_parameters=None
         )
@@ -277,7 +279,7 @@ class Entity:
                 'description': self._description,
                 'entity_id': self._entity.id_,
                 'owner': self._owner_id,
-                'permissions_graph': self.permissions_graph.serialise()
+                'permissions_graph': self._permissions_graph.serialise()
             }
             return data
 
@@ -292,7 +294,7 @@ class Entity:
             self._name = ConstrainedString(
                 name,
                 'name',
-                self.MAX_NAME_LENGTH
+                Entity.MAX_NAME_LENGTH
             )
 
             self._description = ConstrainedString(
@@ -316,7 +318,7 @@ class Entity:
             data = {
                 'name': self._name.serialise(),
                 'description': self._description.serialise(),
-                'storage_region': region_id
+                'region_id': region_id
             }
 
             return data

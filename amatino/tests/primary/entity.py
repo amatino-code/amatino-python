@@ -14,7 +14,7 @@ class EntityTest(SessionTest):
     """
     TEST_ALL_SESSION_METHODS = False
 
-    def __init__(self, name='Create, retrieve an Entity') -> None:
+    def __init__(self, name='Create, retrieve, update an Entity') -> None:
 
         self.entity: Optional[Entity] = None
 
@@ -56,22 +56,17 @@ class EntityTest(SessionTest):
             self.record_failure('Entity ids do not match')
             return
 
-        #new_name = 'Updated Entity Name'
+        new_name = 'Updated Entity Name'
 
-        #try:
-        #    entity.update(
-        #        new_name,
-        #        entity.description,
-        #        entity.owner_id,
-        #        entity.permissions_graph
-        #    )
-        #except Exception as error:
-        #    self.record_failure(error)
-        #    return
+        try:
+            updated_entity = entity.update(new_name)
+        except Exception as error:
+            self.record_failure(error)
+            return
 
-        #if entity.name != new_name:
-        #    self.record_failure('Entity name not updated: ' + str(entity.name))
-        #    return
+        if updated_entity.name != new_name:
+            self.record_failure('Entity name not updated: ' + str(entity.name))
+            return
 
         self.record_success()
         return
