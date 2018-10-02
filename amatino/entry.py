@@ -14,6 +14,7 @@ from typing import Any
 from typing import TypeVar
 from typing import Optional
 from typing import Type
+from typing import List
 
 T = TypeVar('T', bound='Entry')
 
@@ -39,9 +40,6 @@ class Entry(Encodable):
         if not isinstance(side, Side):
             raise TypeError('side must be of type `Side`')
 
-        if account is not None and not isinstance(account, Account):
-            raise TypeError('account must be of type `Account`')
-
         if not isinstance(amount, Decimal):
             raise TypeError('amount must be of type `Decimal`')
 
@@ -50,6 +48,8 @@ class Entry(Encodable):
             assert isinstance(account_id, int)
             self._account_id = account_id
         else:
+            if not isinstance(account, Account):
+                raise TypeError('account must be of type `Account`')
             self._account_id = account.id_
         self._amount = amount
         self._description = Entry._Description(description)
@@ -134,9 +134,9 @@ class Entry(Encodable):
 
         if debits > credits_:
             plug_side = Side.credit
-            amount = debits - credits_
+            amount = Decimal(debits - credits_)
         else:
             plug_side = Side.debit
-            amount = credits_ - debits
+            amount = Decimal(credits_ - debits)
 
         return cls(plug_side, amount, account, description)
