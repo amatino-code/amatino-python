@@ -257,7 +257,19 @@ class Transaction:
         Destroy this Transaction, such that it will no longer be included
         in any view of this Entity's accounting information.
         """
-        raise NotImplementedError
+
+        target = UrlTarget(self._URL_KEY, str(self.id_))
+        parameters = UrlParameters(entity_id=self.entity.id_, targets=[target])
+
+        ApiRequest(
+            path=self._PATH,
+            method=HTTPMethod.DELETE,
+            credentials=self.session,
+            data=None,
+            url_parameters=parameters
+        )
+
+        return
 
     def restore(self) -> None:
         """
