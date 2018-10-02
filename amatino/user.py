@@ -8,7 +8,7 @@ from amatino.session import Session
 from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.url_target import UrlTarget
 from amatino.internal.api_request import ApiRequest
-from amatino.HTTPMethod import HTTPMethod
+from amatino.internal.http_method import HTTPMethod
 from amatino.api_error import ApiError
 from typing import TypeVar
 from typing import Type

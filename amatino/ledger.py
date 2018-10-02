@@ -19,7 +19,7 @@ from amatino.internal.url_parameters import UrlParameters
 from amatino.ledger_row import LedgerRow
 from amatino.unexpected_response_type import UnexpectedResponseType
 from amatino.missing_key import MissingKey
-from amatino.HTTPMethod import HTTPMethod
+from amatino.internal.http_method import HTTPMethod
 from decimal import Decimal
 from typing import Optional
 from typing import TypeVar
