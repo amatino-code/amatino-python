@@ -30,29 +30,34 @@ class Entry(Encodable):
     def __init__(
         self,
         side: Side,
-        account: Account,
         amount: Decimal,
-        description: Optional[str] = None
+        account: Optional[Account] = None,
+        description: Optional[str] = None,
+        account_id: Optional[int] = None
     ) -> None:
 
         if not isinstance(side, Side):
             raise TypeError('side must be of type `Side`')
 
-        if not isinstance(account, Account):
+        if if account is not None and not isinstance(account, Account):
             raise TypeError('account must be of type `Account`')
 
         if not isinstance(amount, Decimal):
             raise TypeError('amount must be of type `Decimal`')
 
         self._side = side
-        self._account = account
+        if account_id is not None:
+            assert isinstance(account_id, int)
+            self._account_id = account_id
+        else:
+            self._account_id = account.id_
         self._amount = amount
         self._description = Entry._Description(description)
 
         return
 
     side = Immutable(lambda s: s._side)
-    account = Immutable(lambda s: s._account)
+    account_id = Immutable(lambda s: s._account_id)
     amount = Immutable(lambda s: s._amount)
     description = Immutable(lambda s: s._description)
 
@@ -82,6 +87,56 @@ class Entry(Encodable):
             return str(self._description)
 
     @classmethod
-    def decode(cls: Type[T], data: dict) -> T:
-        """Decode an Entry from serialised API response data"""
-        raise NotImplementedError
+    def create(
+        cls: Type[T],
+        side: Side,
+        amount: Decimal,
+        account: Account,
+        description: Optional[str] = None
+    ) -> T:
+
+        return cls(side, amount, account=account, description=description)
+
+    @classmethod
+    def create_balanced_pair(
+        cls: Type[T],
+        debit_account: Account,
+        credit_account: Account,
+        amount: Decimal,
+        description: Optional[str] = None
+    ) -> List[T]:
+
+        debit = cls(Side.debit, amount, debit_account, description)
+        credit = cls(Side.credit, amount, credit_account, description)
+
+        return [debit, credit]
+
+    @classmethod
+    def plug(
+        cls: Type[T],
+        account: Account,
+        entries: List[T],
+        description: Optional[str] = None
+    ) -> Optional[T]:
+        """
+        Return an entry plugging the balance gap in a given set of Entries. Or,
+        return None if the Entries already balance.
+        """
+
+        if False in [isinstance(e, Entry) for e in entries]:
+            raise TypeError('Entries must be of type List[Entry]')
+
+        debits = sum([e.amount for e in entries if e.side == Side.debit])
+        credits_ = sum([e.amount for e in entries if e.side == Side.credit])
+
+        if debits == credits_:
+            return None
+
+        if debits > credits_:
+            plug_side = Side.credit
+            amount = debits - credits_
+        else:
+            plug_side = Side.debit
+            amount = credits_ - debits
+
+        return cls(plug_side, amount, account, description)
