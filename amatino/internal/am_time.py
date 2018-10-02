@@ -31,7 +31,7 @@ class AmatinoTime(Encodable):
         self._raw_time = date_time.replace(tzinfo=AmatinoTime.UTC())
         return
 
-    string = Immutable(lambda s: s.encode())
+    string = Immutable(lambda s: s.serialise())
     raw = Immutable(lambda s: s._raw_time)
 
     def serialise(self, str) -> str:
