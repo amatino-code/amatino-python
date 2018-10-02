@@ -20,6 +20,7 @@ from amatino.internal.http_method import HTTPMethod
 from amatino.internal.url_target import UrlTarget
 from amatino.internal.url_parameters import UrlParameters
 from amatino.api_error import ApiError
+from decimal import Decimal
 from typing import TypeVar
 from typing import Optional
 from typing import Type
@@ -199,7 +200,7 @@ class Transaction:
                         data['transaction_time']
                     ),
                     description=data['description'],
-                    entries=[Entry.decode(e) for e in data['entries']],
+                    entries=cls._decode_entries(data['entries']),
                     global_unit_id=data['global_unit_denomination'],
                     custom_unit_id=data['custom_unit_denomination']
                 )
@@ -277,6 +278,32 @@ class Transaction:
             self.session,
             self.custom_unit_id
         )
+
+    @classmethod
+    def _decode_entries(cls: Type[T], data: Any) -> List[Entry]:
+        """Return Entries decoded from API response data"""
+        if not isinstance(data, list):
+            raise ApiError('Unexpected API response type ' + str(type(data)))
+
+        def decode(obj) -> Entry:
+            if not isinstance(obj, dict):
+                raise ApiError('Unexpected API object type ' + str(type(obj)))
+
+            try:
+                entry = Entry(
+                    side=Side(obj['side']),
+                    amount=Decimal(obj['amount']),
+                    account_id=obj['account_id'],
+                    description=obj['descriptiona']
+                )
+            except KeyError as error:
+                message = 'Expected key "{key}" missing from response data'
+                message.format(key=error.args[0])
+                raise ApiError(message)
+
+            return entry
+
+        return [decode(e) for e in data]
 
     class CreateArguments(Encodable):
         def __init__(
