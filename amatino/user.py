@@ -9,6 +9,7 @@ from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.url_target import UrlTarget
 from amatino.internal.api_request import ApiRequest
 from amatino.HTTPMethod import HTTPMethod
+from amatino.api_error import ApiError
 from typing import TypeVar
 from typing import Type
 from typing import Optional
@@ -129,4 +130,28 @@ class User:
     @classmethod
     def _decode_many(cls: Type[T], session: Session, data: Any) -> List[T]:
         """Return a list of Users decoded from API response data"""
-        raise NotImplementedError
+
+        if not isinstance(data, List):
+            raise ApiError('Unexpected API response type ' + str(type(data)))
+
+        def decode(obj: Any) -> T:
+            if not isinstance(data, dict):
+                raise ApiError('Unexpected API object type ' + str(type(obj)))
+
+            try:
+                user = cls(
+                    session=session,
+                    id_=obj['user_id'],
+                    email=obj['email'],
+                    name=obj['name'],
+                    handle=obj['handle'],
+                    avatar_url=obj['avatar_url']
+                )
+            except KeyError as error:
+                message = 'Expected key "{key}" missing from response data'
+                message.format(key=error.args[0])
+                raise ApiError(message)
+
+            return user
+
+        return [decode(u) for u in data]
