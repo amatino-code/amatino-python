@@ -17,6 +17,9 @@ from amatino import Session
 from amatino.internal.api_request import ApiRequest
 from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.data_package import DataPackage
+from typing import Optional
+from typing import List
+
 
 class AmatinoAlpha:
     """
@@ -39,7 +42,7 @@ class AmatinoAlpha:
     request() method has defined by the Amatino API HTTP documentation available
     at https://amatino.io/documentation.
     """
-    _INVALID_INIT_1 = """User ID and saved session filepath must be None when 
+    _INVALID_INIT_1 = """User ID and saved session filepath must be None when
     initialising with email and secret"""
     _INVALID_INIT_2 = """Email and session filepath must be none when
     initialising with user_id and secret"""
@@ -58,8 +61,9 @@ class AmatinoAlpha:
         secret: str = None,
         user_id: int = None,
         saved_session_filepath: str = None
-    ):
-        _ = self._validate_initialisation(
+    ) -> None:
+
+        self._validate_initialisation(
             email,
             secret,
             user_id,
@@ -113,7 +117,7 @@ class AmatinoAlpha:
 
         if not isinstance(saved_session_filepath, str):
             raise TypeError('saved_session_filepath must be of type str')
-        
+
         with open(saved_session_filepath, 'r') as session_file:
             saved_session = session_file.read()
 
@@ -145,9 +149,9 @@ class AmatinoAlpha:
         self,
         path: str,
         method: str,
-        query_string: str = None,
+        query_string: Optional[str] = None,
         body: list = None
-    ) -> [dict]:
+    ) -> List[dict]:
         """
         Make a request to the Amatino API. Supply parameters as per the
         requirements described for resources in the Amatino API documentation
@@ -167,7 +171,7 @@ class AmatinoAlpha:
 
         data_package = None
         if body is not None:
-            _ = json.dumps(body) # Provoke encoding failure early
+            json.dumps(body)  # Provoke encoding failure early
             data_package = DataPackage(raw_list_data=body)
 
         request = ApiRequest(
