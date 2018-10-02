@@ -39,7 +39,7 @@ class Entry(Encodable):
         if not isinstance(side, Side):
             raise TypeError('side must be of type `Side`')
 
-        if if account is not None and not isinstance(account, Account):
+        if account is not None and not isinstance(account, Account):
             raise TypeError('account must be of type `Account`')
 
         if not isinstance(amount, Decimal):
