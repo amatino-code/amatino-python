@@ -70,14 +70,13 @@ class UrlParameters:
         return
 
     @classmethod
-    def from_single_target(
-        cls: Type[T],
-        target: UrlTarget
-    ) -> T:
+    def from_targets(cls: Type[T], targets: List[UrlTarget]) -> T:
+        """Initialise UrlParameters with a set of UrlTargets only"""
+        return cls(targets=targets)
 
-        if not isinstance(target, UrlTarget):
-            raise TypeError('target must be of type `UrlTarget`')
-
+    @classmethod
+    def from_single_target(cls: Type[T], target: UrlTarget) -> T:
+        """Initialise UrlParameters with a single UrlTarget"""
         return cls(targets=[target])
 
     def __str__(self):
