@@ -11,6 +11,7 @@ import amatino.tests.derived as derived
 
 SEQUENCE = [
     ancillary.SessionTest,
+    ancillary.GlobalUnitTest,
     primary.EntityTest,
     primary.AccountTest,
     primary.TransactionTest,

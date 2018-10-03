@@ -16,7 +16,7 @@ class SessionTest(Test):
     """
     TEST_ALL_SESSION_METHODS = True
 
-    def __init__(self, name='Create a session') -> None:
+    def __init__(self, name='Create a Session') -> None:
 
         super().__init__(name)
 
