@@ -17,6 +17,7 @@ class AccountTest(EntityTest):
 
     def __init__(self, name='Create, retrieve, update Account') -> None:
 
+        self.usd = None
         super().__init__(name)
         self.create_entity()
         if not isinstance(self.entity, Entity):
@@ -25,16 +26,17 @@ class AccountTest(EntityTest):
             )
         return
 
-    def create_account(self) -> Account:
+    def create_account(self, amt=AMType.asset, name='Test account') -> Account:
 
-        usd = GlobalUnit.retrieve(self.session, USD_UNIT_ID)
+        if self.usd is None:
+            self.usd = GlobalUnit.retrieve(self.session, USD_UNIT_ID)
 
         account = Account.create(
             self.session,
             self.entity,
-            'Test Account',
-            AMType.asset,
-            usd,
+            name,
+            amt,
+            self.usd,
             'A test Account created by the Python test suite'
         )
 

@@ -34,7 +34,7 @@ class AmatinoTime(Encodable):
     string = Immutable(lambda s: s.serialise())
     raw = Immutable(lambda s: s._raw_time)
 
-    def serialise(self, str) -> str:
+    def serialise(self) -> str:
         return datetime.datetime.strftime(self._raw_time, self._FORMAT_STRING)
 
     class UTC(datetime.tzinfo):

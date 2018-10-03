@@ -11,5 +11,6 @@ import amatino.tests.ancillary as ancillary
 SEQUENCE = [
     ancillary.SessionTest,
     primary.EntityTest,
-    primary.AccountTest
+    primary.AccountTest,
+    primary.TransactionTest
 ]

@@ -63,7 +63,7 @@ class Entry(Encodable):
 
     def serialise(self) -> Dict[str, Any]:
         data = {
-            'account_id': self._account.id_,
+            'account_id': self._account_id,
             'amount': str(self._amount),
             'description': self._description.serialise(),
             'side': self._side.value

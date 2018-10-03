@@ -20,6 +20,7 @@ from amatino.internal.http_method import HTTPMethod
 from amatino.internal.url_target import UrlTarget
 from amatino.internal.url_parameters import UrlParameters
 from amatino.api_error import ApiError
+from amatino.missing_key import MissingKey
 from decimal import Decimal
 from typing import TypeVar
 from typing import Optional
@@ -107,12 +108,14 @@ class Transaction:
         )
 
         data = DataPackage.from_object(arguments)
+        parameters = UrlParameters(entity_id=entity.id_)
 
         request = ApiRequest(
             path=Transaction._PATH,
             method=HTTPMethod.POST,
             credentials=session,
-            data=data
+            data=data,
+            url_parameters=parameters
         )
 
         transaction = cls._decode(session, entity, request.response_data)
@@ -120,16 +123,23 @@ class Transaction:
         return transaction
 
     @classmethod
-    def retrieve(cls: Type[T], session: Session, entity: Entity, id_: int) -> T:
+    def retrieve(
+        cls: Type[T],
+        session: Session,
+        entity: Entity,
+        id_: int,
+        denomination: Denomination
+    ) -> T:
         """Return a retrieved Transaction"""
-        return cls.retrieve_many(session, entity, [id_])[0]
+        return cls.retrieve_many(session, entity, [id_], denomination)[0]
 
     @classmethod
     def retrieve_many(
         cls: Type[T],
         session: Session,
         entity: Entity,
-        ids: List[int]
+        ids: List[int],
+        denomination: Denomination
     ) -> List[T]:
         """Return many retrieved Transactions"""
 
@@ -145,14 +155,17 @@ class Transaction:
         if False in [isinstance(i, int) for i in ids]:
             raise TypeError('ids must be of type `int`')
 
-        targets = UrlTarget.from_many_integers(Transaction._URL_KEY, ids)
-        parameters = UrlParameters(entity_id=entity.id_, targets=targets)
+        parameters = UrlParameters(entity_id=entity.id_)
+
+        data = DataPackage(list_data=[cls.RetrieveArguments(
+            i, denomination, None
+        ) for i in ids])
 
         request = ApiRequest(
             path=Transaction._PATH,
             method=HTTPMethod.GET,
             credentials=session,
-            data=None,
+            data=data,
             url_parameters=parameters
         )
 
@@ -205,9 +218,7 @@ class Transaction:
                     custom_unit_id=data['custom_unit_denomination']
                 )
             except KeyError as error:
-                message = 'Expected key "{key}" missing from response data'
-                message.format(key=error.args[0])
-                raise ApiError(message)
+                raise MissingKey(error.args[0])
 
             return transaction
 
@@ -233,12 +244,14 @@ class Transaction:
         )
 
         data = DataPackage.from_object(arguments)
+        parameters = UrlParameters(entity_id=self.entity.id_)
 
         request = ApiRequest(
             path=Transaction._PATH,
             method=HTTPMethod.PUT,
             credentials=self.session,
-            data=data
+            data=data,
+            url_parameters=parameters
         )
 
         transaction = Transaction._decode(
@@ -306,16 +319,53 @@ class Transaction:
                     side=Side(obj['side']),
                     amount=Decimal(obj['amount']),
                     account_id=obj['account_id'],
-                    description=obj['descriptiona']
+                    description=obj['description']
                 )
             except KeyError as error:
-                message = 'Expected key "{key}" missing from response data'
-                message.format(key=error.args[0])
-                raise ApiError(message)
+                raise MissingKey(error.args[0])
 
             return entry
 
         return [decode(e) for e in data]
+
+    class RetrieveArguments(Encodable):
+        def __init__(
+            self,
+            transaction_id: int,
+            denomination: Denomination,
+            version: Optional[int]
+        ) -> None:
+
+            if not isinstance(transaction_id, int):
+                raise TypeError('transaction_id must be of type `int`')
+
+            if not isinstance(denomination, Denomination):
+                raise TypeError('denomination must be of type `Denomination`')
+
+            if version and not isinstance(version, int):
+                raise TypeError('version must be of type `Optional[int]`')
+
+            self._transaction_id = transaction_id
+
+            if isinstance(denomination, GlobalUnit):
+                self._global_unit_id = denomination.id_
+                self._custom_unit_id = None
+            else:
+                self._global_unit_id = None
+                self._custom_unit_id = denomination.id_
+
+            self._version = version
+
+            return
+
+        def serialise(self) -> Dict[str, Any]:
+            data = {
+                'transaction_id': self._transaction_id,
+                'global_unit_denomination': self._global_unit_id,
+                'custom_unit_denomination': self._custom_unit_id,
+                'version': self._version
+            }
+            return data
 
     class CreateArguments(Encodable):
         def __init__(
@@ -369,12 +419,14 @@ class Transaction:
             if not isinstance(transaction, Transaction):
                 raise TypeError('transaction must be of type `Transaction`')
 
+            self._transaction_id = transaction.id_
+
             if time:
                 if not isinstance(time, datetime):
                     raise TypeError('time must be of type `datetime`')
-                self._ = time
+                self._ = AmatinoTime(time)
             else:
-                self._time = transaction.time
+                self._time = AmatinoTime(transaction.time)
 
             if entries:
                 self._entries = Transaction._Entries(entries)
@@ -408,6 +460,7 @@ class Transaction:
                 global_unit_id = self._denomination.id_
 
             data = {
+                'transaction_id': self._transaction_id,
                 'transaction_time': self._time.serialise(),
                 'custom_unit_denomination': custom_unit_id,
                 'global_unit_denomination': global_unit_id,

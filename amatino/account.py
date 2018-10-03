@@ -198,7 +198,13 @@ class Account:
 
     def _denomination(self) -> Denomination:
         """Return the Denomination of this account"""
-        raise NotImplementedError
+        if self._global_unit_id is not None:
+            return GlobalUnit.retrieve(self.session, self._global_unit_id)
+        return CustomUnit.retrieve(
+            self.entity,
+            self.session,
+            self._custom_unit_id
+        )
 
     class CreateArguments(Encodable):
         def __init__(
