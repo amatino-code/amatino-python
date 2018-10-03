@@ -20,6 +20,7 @@ from amatino.ledger_row import LedgerRow
 from amatino.unexpected_response_type import UnexpectedResponseType
 from amatino.missing_key import MissingKey
 from amatino.internal.http_method import HTTPMethod
+from amatino.internal.data_package import DataPackage
 from decimal import Decimal
 from typing import Optional
 from typing import TypeVar
@@ -47,7 +48,7 @@ class Ledger:
     broken into pages you can retrieve seperately.
     """
 
-    _PATH = '/account/ledger'
+    _PATH = '/accounts/ledger'
 
     def __init__(
         self,
@@ -140,6 +141,7 @@ class Ledger:
             end_time,
             denomination
         )
+        data = DataPackage(object_data=arguments, override_listing=True)
 
         parameters = UrlParameters(entity_id=entity.id_)
 
@@ -147,7 +149,7 @@ class Ledger:
             path=cls._PATH,
             method=HTTPMethod.GET,
             credentials=session,
-            data=arguments,
+            data=data,
             url_parameters=parameters
         )
 
@@ -193,24 +195,19 @@ class Ledger:
 
         def decode(data) -> LedgerRow:
 
-            if not isinstance(data, dict):
-                raise UnexpectedResponseType(data, dict)
+            if not isinstance(data, list):
+                raise UnexpectedResponseType(data, list)
 
-            try:
-                row = LedgerRow(
-                    transaction_id=data['transaction_id'],
-                    transaction_time=AmatinoTime.decode(
-                        data['transaction_time']
-                    ),
-                    description=data['description'],
-                    opposing_account_id=data['opposing_account_id'],
-                    opposing_account_name=data['opposing_account_name'],
-                    debit=Decimal(data['debit']),
-                    credit=Decimal(data['credit']),
-                    balance=Decimal(data['balance'])
-                )
-            except KeyError as error:
-                raise MissingKey(error.args[0])
+            row = LedgerRow(
+                transaction_id=data[0],
+                transaction_time=AmatinoTime.decode(data[1]),
+                description=data[2],
+                opposing_account_id=data[3],
+                opposing_account_name=data[4],
+                debit=Decimal(data[5]),
+                credit=Decimal(data[6]),
+                balance=Decimal(data[7])
+            )
 
             return row
 
@@ -247,11 +244,18 @@ class Ledger:
                     'denomination must be of type `Denomination` or None'
                 )
 
+            if denomination is None:
+                denomination = account.denomination
+
             self._account = account
             self._order = order
             self._page = page
-            self._start_time = AmatinoTime(start_time)
-            self._end_time = AmatinoTime(end_time)
+            self._start_time = None
+            if start_time:
+                self._start_time = AmatinoTime(start_time)
+            self._end_time = None
+            if end_time:
+                self._end_time = AmatinoTime(end_time)
             self._denomination = denomination
 
         def serialise(self) -> Dict[str, Any]:
@@ -282,3 +286,21 @@ class Ledger:
             }
 
             return data
+
+    def __iter__(self):
+        return Ledger.Iterator(self._rows)
+
+    class Iterator:
+        """An iterator for iterating through LedgerRows in a Ledger"""
+
+        def __init__(self, rows: List[LedgerRow]) -> None:
+            self._index = 0
+            self._rows = rows
+            return
+
+        def __next__(self) -> LedgerRow:
+            if self._index >= len(self._rows):
+                raise StopIteration
+            row = self._rows[self._index]
+            self._index += 1
+            return row

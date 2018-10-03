@@ -11,6 +11,7 @@ from decimal import Decimal
 from amatino.tests.primary.account import AccountTest
 from amatino import AMType
 from urllib.error import HTTPError
+from typing import Optional
 
 NAME = 'Create, retrieve, update, delete Transactions'
 
@@ -25,7 +26,16 @@ class TransactionTest(AccountTest):
         self.liability = self.create_account(AMType.liability, 'Test Liability')
         return
 
-    def create_transaction(self) -> Transaction:
+    def create_transaction(
+        self,
+        time: Optional[datetime] = None,
+        amount: Optional[Decimal] = None
+    ) -> Transaction:
+
+        if time is None:
+            time = datetime.utcnow()
+        if amount is None:
+            amount = Decimal(10) 
 
         transaction = Transaction.create(
             self.session,

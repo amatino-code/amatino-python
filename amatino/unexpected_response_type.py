@@ -12,5 +12,5 @@ class UnexpectedResponseType(ApiError):
 
     def __init__(self, recieved: Any, expected: type) -> None:
         super().__init__(
-            self._PREFIX.format(str(type(recieved)), str(expected))
+            self._PREFIX.format(str(expected), str(type(recieved)))
         )
