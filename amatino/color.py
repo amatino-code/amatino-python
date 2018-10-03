@@ -6,6 +6,7 @@ Author: hugh@amatino.io
 from typing import TypeVar
 from typing import Type
 from amatino.internal.immutable import Immutable
+from amatino.internal.encodable import Encodable
 
 T = TypeVar('T', bound='Color')
 
@@ -41,9 +42,10 @@ class Color:
 
         return
 
-    red: int = Immutable(lambda s: s._red)
-    green: int = Immutable(lambda s: s._green)
-    blue: int = Immutable(lambda s: s._blue)
+    red = Immutable(lambda s: s._red)
+    green = Immutable(lambda s: s._green)
+    blue = Immutable(lambda s: s._blue)
+    hex_string = Immutable(lambda s: s.as_hex_string())
 
     @classmethod
     def from_hex_string(cls: Type[T], hexstring: str) -> T:
@@ -66,7 +68,10 @@ class Color:
         """
         Return the colour as a hex value string
         """
-        raise NotImplementedError
+        hex_string = hex(self.red)[2:]
+        hex_string += hex(self.green)[2:]
+        hex_string += hex(self.blue)[2:]
+        return hex_string
 
     def as_int_tuple(self) -> tuple:
         """
@@ -74,3 +79,7 @@ class Color:
         (red, green, blue)
         """
         return (self._red, self._green, self._blue)
+
+    def serialise(self) -> str:
+        assert len(self.hex_string) == 6
+        return self.hex_string

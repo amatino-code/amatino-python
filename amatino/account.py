@@ -24,6 +24,7 @@ from amatino.internal.http_method import HTTPMethod
 from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.url_target import UrlTarget
 from amatino.api_error import ApiError
+from amatino.missing_key import MissingKey
 
 T = TypeVar('T', bound='Account')
 
@@ -106,12 +107,14 @@ class Account:
         )
 
         data = DataPackage.from_object(arguments)
+        parameters = UrlParameters(entity_id=entity.id_)
 
         request = ApiRequest(
             path=Account._PATH,
             method=HTTPMethod.POST,
             credentials=session,
-            data=data
+            data=data,
+            url_parameters=parameters
         )
 
         account = cls._decode(session, entity, request.response_data)
@@ -128,10 +131,8 @@ class Account:
         """
         Return an existing Account
         """
-        url_parameters = UrlParameters(
-            entity_id=entity.id_,
-            targets=UrlTarget(key=Account._URL_KEY, value=str(account_id))
-        )
+        target = UrlTarget.from_integer(key=Account._URL_KEY, value=account_id)
+        url_parameters = UrlParameters(entity_id=entity.id_, targets=[target])
 
         request = ApiRequest(
             path=Account._PATH,
@@ -147,20 +148,20 @@ class Account:
 
     def update(
         self: T,
-        name: str,
-        am_type: AMType,
-        parent: Optional[T],
-        description: Optional[str],
-        denomination: Denomination,
-        counterparty: Optional[Entity],
-        color: Optional[Color]
+        name: Optional[str] = None,
+        am_type: Optional[AMType] = None,
+        parent: Optional[T] = None,
+        description: Optional[str] = None,
+        denomination: Optional[Denomination] = None,
+        counterparty: Optional[Entity] = None,
+        color: Optional[Color] = None
     ) -> 'Account':
         """
         Update this Account with new metadata.
         """
 
         arguments = Account.UpdateArguments(
-            self.id_,
+            self,
             name,
             am_type,
             parent,
@@ -171,12 +172,14 @@ class Account:
         )
 
         data = DataPackage.from_object(arguments)
+        parameters = UrlParameters(entity_id=self.entity.id_)
 
         request = ApiRequest(
             path=Account._PATH,
             method=HTTPMethod.PUT,
             credentials=self.session,
-            data=data
+            data=data,
+            url_parameters=parameters
         )
 
         account = Account._decode(
@@ -244,13 +247,13 @@ class Account:
 
             data = {
                 'name': self._name.serialise(),
-                'type': self._type.beep,
+                'type': self._type.value,
                 'description': self._description.serialise(),
                 'parent_account_id': self._parent.serialise(),
                 'counterparty_entity_id': counterparty_id,
                 'global_unit_id': self._global_unit.serialise(),
                 'custom_unit_id': self._custom_unit.serialise(),
-                'color': color_code
+                'colour': color_code
             }
             return data
 
@@ -293,12 +296,10 @@ class Account:
                     global_unit_id=data['global_unit_id'],
                     custom_unit_id=data['custom_unit_id'],
                     counterparty_id=data['counterparty_entity_id'],
-                    color=Color.from_hex_string(data['color'])
+                    color=Color.from_hex_string(data['colour'])
                 )
             except KeyError as error:
-                message = 'Expected key "{key}" missing from response data'
-                message.format(key=error.args[0])
-                raise ApiError(message)
+                raise MissingKey(error.args[0])
 
             return account
 
@@ -309,44 +310,67 @@ class Account:
     class UpdateArguments(Encodable):
         def __init__(
             self,
-            account_id: int,
-            name: str,
-            am_type: AMType,
+            account: T,
+            name: Optional[str],
+            am_type: Optional[AMType],
             parent: Optional[T],
             description: Optional[str],
-            denomination: Denomination,
+            denomination: Optional[Denomination],
             counterparty: Optional[Entity],
             color: Optional[Color]
         ) -> None:
 
-            if not isinstance(account_id, int):
-                raise TypeError('account_id must be of type `int`')
+            if not isinstance(account, Account):
+                raise TypeError('account must be of type `Account`')
 
-            self._account_id = account_id
+            self._account_id = account.id_
 
+            if not name:
+                name = account.name
+            assert isinstance(name, str)
             self._name = Account._Name(name)
-            self._description = Account._Description(description)
-            self._parent = Account._Parent(parent)
 
-            if not isinstance(am_type, AMType):
-                raise TypeError('am_type must be of type `AMType`')
+            if am_type:
+                if not isinstance(am_type, AMType):
+                    raise TypeError('am_type must be of type `AMType`')
+            else:
+                am_type = account.am_type
 
             self._type = am_type
-            self._global_unit = Account._GlobalUnit(denomination)
-            self._custom_unit = Account._CustomUnit(denomination)
 
-            if (
-                    counterparty is not None
-                    and not isinstance(counterparty, Entity)
-            ):
-                raise TypeError('counterparty must be of type `Entity`')
+            if not description:
+                description = account.description
+            self._description = Account._Description(description)
 
-            self._counterparty = counterparty
+            if not parent:
+                self._parent_id = account.parent_id
+            else:
+                self._parent_id = Account._Parent(parent).serialise()
 
-            if color is not None and not isinstance(color, Color):
-                raise TypeError('color must be of type `Color`')
+            if denomination:
+                self._global_unit_id = Account._GlobalUnit(
+                    denomination
+                ).serialise()
+                self._custom_unit_id = Account._CustomUnit(
+                    denomination
+                ).serialise()
+            else:
+                self._global_unit_id = account.global_unit_id
+                self._custom_unit_id = account.custom_unit_id
 
-            self._color = color
+            if counterparty:
+                if not isinstance(counterparty, Entity):
+                    raise TypeError('counterparty must be of type `Entity`')
+                self._counterparty_id = counterparty.id_
+            else:
+                self._counterparty_id = account.counterparty_id
+
+            if color:
+                if not isinstance(color, Color):
+                    raise TypeError('color must be of type `Color`')
+                self._color = color
+            else:
+                self._color = account.color
 
             return
 
@@ -357,7 +381,11 @@ class Account:
                 'account_id': self._account_id,
                 'description': self._description.serialise(),
                 'type': self._type.value,
-                'parent': self._parent.serialise()
+                'parent_account_id': self._parent_id,
+                'global_unit_id': self._global_unit_id,
+                'custom_unit_id': self._custom_unit_id,
+                'colour': self._color.serialise(),
+                'counterparty_entity_id': self._counterparty_id
             }
             return data
 

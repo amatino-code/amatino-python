@@ -11,6 +11,7 @@ from amatino.internal.api_request import ApiRequest
 from amatino.internal.immutable import Immutable
 from amatino.internal.http_method import HTTPMethod
 from amatino.api_error import ApiError
+from amatino.unexpected_response_type import UnexpectedResponseType
 from typing import TypeVar
 from typing import Type
 from typing import Any
@@ -77,7 +78,7 @@ class GlobalUnit(Denomination):
         parameters = UrlParameters.from_targets(targets)
 
         request = ApiRequest(
-            path=GlobalUnit.PATH,
+            path=GlobalUnit._PATH,
             url_parameters=parameters,
             credentials=session,
             method=HTTPMethod.GET
@@ -95,8 +96,8 @@ class GlobalUnit(Denomination):
             raise ApiError('Unexpected non-list API data response')
 
         def decode(unit_data: Any) -> T:
-            if not isinstance(data, dict):
-                raise ApiError('Unexpected non-dict API data response')
+            if not isinstance(unit_data, dict):
+                raise UnexpectedResponseType(unit_data, dict)
 
             try:
                 unit = cls(

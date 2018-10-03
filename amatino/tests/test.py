@@ -85,7 +85,9 @@ class Test:
             self._note = 'An HTTP error occured: ' + str(note.code)
             try:
                 self._note += '. The API returned the following:\n'
-                self._note += note.read().decode('utf-8')
+                self._note += '       ' + note.read().decode('utf-8')
+                self._note += '\n Traceback follows:'
+                self._note += '\n ' + traceback.format_exc()
             except Exception:
                 pass
             return

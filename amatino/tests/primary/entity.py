@@ -3,45 +3,49 @@ Amatino API Python Bindings
 Entity Test Module
 Author: hugh@amatino.io
 """
-from typing import Optional
 from amatino.entity import Entity
 from amatino.tests.ancillary.session import SessionTest
+from amatino import Session
 
 
 class EntityTest(SessionTest):
     """
     Test the Entity primary object
     """
-    TEST_ALL_SESSION_METHODS = False
 
     def __init__(self, name='Create, retrieve, update an Entity') -> None:
 
-        self.entity: Optional[Entity] = None
+        self.entity = None
 
         super().__init__(name)
-        result = self.create_session()
-        if result is not None:
-            if isinstance(result, Exception):
-                raise result
-            raise RuntimeError('Session creation failed: ' + str(result))
+        self.create_session()
+        if not isinstance(self.session, Session):
+            raise RuntimeError(
+                'Session creation failed, consider running Session tests'
+            )
         return
+
+    def create_entity(self) -> Entity:
+        entity = Entity.create(
+            self.session,
+            'Test Entity',
+            None,
+            None
+        )
+        self.entity = entity
+        return entity
 
     def execute(self) -> None:
 
         assert self.session is not None
 
         try:
-            entity = Entity.create(
-                self.session,
-                'Test Entity',
-                None,
-                None
-            )
+            entity = self.create_entity()
         except Exception as error:
             self.record_failure(error)
             return
 
-        self.entity = entity
+        assert isinstance(self.entity, Entity)
 
         try:
             entity = Entity.retrieve(

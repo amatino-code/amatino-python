@@ -20,18 +20,28 @@ class SessionTest(Test):
 
         super().__init__(name)
 
-        self.session: Optional[Session] = None
+        self.session = None
 
         return
 
     def create_session(self) -> Optional[Any]:
+        session = Session.create_with_email(
+            self.email,
+            self.secret
+        )
+        self.session = session
+        return session
+
+    def execute(self) -> None:
+
         try:
             session = Session.create_with_email(
                 self.email,
                 self.secret
             )
         except Exception as error:
-            return error
+            self.record_failure(error)
+            return
 
         did_fail_to_set = False
         try:
@@ -41,12 +51,8 @@ class SessionTest(Test):
             pass
 
         if did_fail_to_set is not True:
-            return 'Property set did not raise exception'
-
-        self.session = session
-
-        if self.TEST_ALL_SESSION_METHODS is False:
-            return None
+            self.record_failure('Property set did not raise exception')
+            return
 
         try:
             session = Session.create_with_user_id(
@@ -54,16 +60,7 @@ class SessionTest(Test):
                 self.secret
             )
         except Exception as error:
-            return error
-
-        return None
-
-    def execute(self) -> None:
-
-        result = self.create_session()
-
-        if result is not None:
-            self.record_failure(result)
+            self.record_failure(error)
             return
 
         self.record_success()
