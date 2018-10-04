@@ -5,12 +5,19 @@ Author: hugh@amatino.io
 
 Provides a constant manifest of tests to execute
 """
-
-import amatino.tests.alpha as alpha
+import amatino.tests.primary as primary
+import amatino.tests.ancillary as ancillary
+import amatino.tests.derived as derived
+from amatino.tests.ancillary.custom_unit import CustomUnitTest
 
 SEQUENCE = [
-    alpha.AlphaCreateTest,
-    alpha.AlphaCreateEntityTest,
-    alpha.AlphaCreateAccountTest,
-    alpha.AlphaCreateTransactionsTest
+    ancillary.SessionTest,
+    ancillary.GlobalUnitTest,
+    CustomUnitTest,
+    ancillary.UserTest,
+    primary.EntityTest,
+    primary.AccountTest,
+    primary.TransactionTest,
+    derived.LedgerTest,
+    derived.RecursiveLedgerTest
 ]

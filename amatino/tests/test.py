@@ -6,15 +6,43 @@ Author: hugh@amatino.io
 Base class for tests or, when executed as __main__, the entrypoint for the test
 sequence.
 """
+from urllib.error import HTTPError
+from typing import Optional
+from typing import Any
+from os import environ
+import traceback
+
 
 class Test:
     """
     Abstract class offering base-level functionality to tests.
     """
-    def __init__(self, test_name: str):
-        
+    def __init__(self, test_name: str) -> None:
+
         if not isinstance(test_name, str):
             raise TypeError('test_name must be of type `str`')
+
+        raw_user_id = environ['AMATINO_TEST_USER_ID']
+        email = environ['AMATINO_TEST_EMAIL']
+        secret = environ['AMATINO_TEST_SECRET']
+
+        if raw_user_id is None:
+            raise RuntimeError('AMATINO_TEST_USER_ID env variable required')
+
+        try:
+            user_id = int(raw_user_id)
+        except Exception as error:
+            raise RuntimeError('AMATINO_TEST_USER_ID string must hold integer')
+
+        if email is None:
+            raise RuntimeError('AMATINO_TEST_EMAIL env variable required')
+
+        if secret is None:
+            raise RuntimeError('AMATINO_TEST_SECRET env variable required')
+
+        self.user_id = user_id
+        self.email = email
+        self.secret = secret
 
         self._name = test_name
         self._note = None
@@ -36,14 +64,14 @@ class Test:
         self._record_result(True, note)
         return
 
-    def record_failure(self, note: str = None) -> None:
+    def record_failure(self, note: Optional[Any] = None) -> None:
         """
         Assert that the test has finished and its conditions were not met
         """
         self._record_result(False, note)
         return
 
-    def _record_result(self, result: bool, note: str) -> None:
+    def _record_result(self, result: bool, note: Optional[str]) -> None:
         """
         Record an assertion of pass or failure
         """
@@ -53,11 +81,23 @@ class Test:
             raise RuntimeError('Attempt to pass/fail a completed test')
         self._passed = result
 
-        if note is not None and not isinstance(note, str):
-            raise TypeError('If passed, note must be of type `str`')
+        if isinstance(note, HTTPError):
+            self._note = 'An HTTP error occured: ' + str(note.code)
+            try:
+                self._note += '. The API returned the following:\n'
+                self._note += '       ' + note.read().decode('utf-8')
+                self._note += '\n Traceback follows:'
+                self._note += '\n ' + traceback.format_exc()
+            except Exception:
+                pass
+            return
+
+        if isinstance(note, Exception):
+            self._note = traceback.format_exc()
+            return
 
         self._note = note
-        
+
         return
 
     def report(self) -> str:
@@ -73,6 +113,6 @@ class Test:
         report += self._name
 
         if self._note is not None:
-            report += '\n       ' + self._note
+            report += '\n       ' + str(self._note)
 
         return report

@@ -3,37 +3,27 @@ Amatino API Python Bindings
 AM Type Module
 Author: hugh@amatino.io
 """
+from enum import Enum
 
-class AMType:
+
+class AMType(Enum):
     """
-    Amatino Types are the five fundamental account type: Asset,
-    liability, income, expense, and equity. You won't ever
-    need to create an AMType object yourself - Instead, simply
-    import required constants from this module: ASSET, LIABILITY,
-    INCOME, EXPENSE, EQUITY.
+    Double-entry accounting divides accounts into five fundamental types:
+    Assets, liabilities, equities, incomes and expenses. Throughout Amatino,
+    these five constants are referred to as Types.
+
+    Because 'Type' is such a loaded word in the programming world, Amatino
+    Python name-spaces Types as AMType.
+
+    You will most often encounter Types when creating Accounts. Erstwhile, most
+    of the work that Types do occurs behind the scenes, and you won't need to
+    interact with them directly.
+
+    Under the hood, Types allow Amatino to maintain the Fundamental Double-Entry
+    Equality.
     """
-    _VALID = [
-        'liability',
-        'asset',
-        'equity',
-        'income',
-        'expense'
-    ]
-
-    def __init__(self, name: str):
-        
-        if not isinstance(name, str):
-            raise TypeError('AMType name must be of type str')
-
-        if not name in self._VALID:
-            raise ValueError('Invalid name. Supply asset, liability, equity, income, or expense')
-
-        self._name = name
-
-        return
-
-ASSET = AMType('asset')
-LIABILITY = AMType('liability')
-EQUITY = AMType('equity')
-INCOME = AMType('income')
-EXPENSE = AMType('expense')
+    asset = 1
+    liability = 2
+    equity = 3
+    income = 4
+    expense = 5
