@@ -462,7 +462,7 @@ class Account:
             if not isinstance(denomination, Denomination):
                 raise TypeError('denomination must be of type `Denomination`')
 
-            self._custom_unit_id: Optional[int] = None
+            self._custom_unit_id = None
 
             if isinstance(denomination, CustomUnit):
                 self._custom_unit_id = denomination.id_
@@ -478,7 +478,7 @@ class Account:
             if not isinstance(denomination, Denomination):
                 raise TypeError('denomination must be of type `Denomination`')
 
-            self._global_unit_id: Optional[int] = None
+            self._global_unit_id = None
 
             if isinstance(denomination, GlobalUnit):
                 self._global_unit_id = denomination.id_
