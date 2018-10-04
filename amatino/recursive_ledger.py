@@ -22,4 +22,4 @@ class RecursiveLedger(Ledger):
     request. If the Ledger you define spans more than 1,000 rows, it will be
     broken into pages you can retrieve seperately.
     """
-    _PATH = '/account/ledger/recursive'
+    _PATH = '/accounts/ledger/recursive'

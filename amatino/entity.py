@@ -169,7 +169,7 @@ class Entity:
     ) -> 'Entity':
         """
         Modify data describing this Entity. Returns this Entity, the Entity
-        instance is updated-in-place.
+        instance is not modified in place.
         """
 
         owner_id = None

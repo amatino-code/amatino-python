@@ -9,4 +9,6 @@ from amatino.side import Side
 from amatino.entry import Entry
 from amatino.am_type import AMType
 from amatino.ledger import Ledger
+from amatino.recursive_ledger import RecursiveLedger
 from amatino.ledger_row import LedgerRow
+from amatino.user import User

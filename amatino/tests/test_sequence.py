@@ -14,8 +14,10 @@ SEQUENCE = [
     ancillary.SessionTest,
     ancillary.GlobalUnitTest,
     CustomUnitTest,
+    ancillary.UserTest,
     primary.EntityTest,
     primary.AccountTest,
     primary.TransactionTest,
-    derived.LedgerTest
+    derived.LedgerTest,
+    derived.RecursiveLedgerTest
 ]

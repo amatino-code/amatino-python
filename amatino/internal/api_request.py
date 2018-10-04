@@ -27,7 +27,7 @@ class ApiRequest:
 
     _ENDPOINT = 'https://api.amatino.io'
     _DEBUG_ENDPOINT = 'http://127.0.0.1:5000'
-    _TIMEOUT = 5
+    _TIMEOUT = 10
 
     def __init__(
         self,

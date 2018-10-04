@@ -9,7 +9,7 @@ from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.url_target import UrlTarget
 from amatino.internal.api_request import ApiRequest
 from amatino.internal.http_method import HTTPMethod
-from amatino.api_error import ApiError
+from amatino.unexpected_response_type import UnexpectedResponseType
 from typing import TypeVar
 from typing import Type
 from typing import Optional
@@ -51,7 +51,7 @@ class User:
     change your plan at any time.
     """
     _URL_KEY = 'user_id'
-    _PATH = '/user'
+    _PATH = '/users'
 
     def __init__(
         self,
@@ -63,10 +63,10 @@ class User:
         avatar_url: str
     ) -> None:
 
-        self._id = id_,
-        self._email = email,
-        self._name = name,
-        self._handle = handle,
+        self._id = id_
+        self._email = email
+        self._name = name
+        self._handle = handle
         self._avatar_url = avatar_url
 
         return
@@ -80,7 +80,7 @@ class User:
     @classmethod
     def retrieve_authenticated_user(cls: Type[T], session: Session) -> T:
         """Return the User authenticated by the supplied Session"""
-        return cls._retrieve_many(session, None)[0]
+        raise NotImplementedError  # Pending bug fix in User retrieval
 
     @classmethod
     def retrieve(cls: Type[T], session: Session, id_: int) -> T:
@@ -131,26 +131,21 @@ class User:
     def _decode_many(cls: Type[T], session: Session, data: Any) -> List[T]:
         """Return a list of Users decoded from API response data"""
 
-        if not isinstance(data, List):
-            raise ApiError('Unexpected API response type ' + str(type(data)))
+        if not isinstance(data, list):
+            raise UnexpectedResponseType(data, list)
 
         def decode(obj: Any) -> T:
-            if not isinstance(data, dict):
-                raise ApiError('Unexpected API object type ' + str(type(obj)))
+            if not isinstance(obj, dict):
+                raise UnexpectedResponseType(obj, dict)
 
-            try:
-                user = cls(
-                    session=session,
-                    id_=obj['user_id'],
-                    email=obj['email'],
-                    name=obj['name'],
-                    handle=obj['handle'],
-                    avatar_url=obj['avatar_url']
-                )
-            except KeyError as error:
-                message = 'Expected key "{key}" missing from response data'
-                message.format(key=error.args[0])
-                raise ApiError(message)
+            user = cls(
+                session=session,
+                id_=obj['user_id'],
+                email=obj['email'],
+                name=obj['name'],
+                handle=obj['handle'],
+                avatar_url=obj['avatar_url']
+            )
 
             return user
 

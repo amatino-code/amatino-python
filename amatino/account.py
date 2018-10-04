@@ -67,6 +67,8 @@ class Account:
         self._counterparty_id = counterparty_id
         self._color: Color = color
 
+        self._cached_denomination = None
+
         return
 
     session = Immutable(lambda s: s._session)
@@ -90,7 +92,7 @@ class Account:
         name: str,
         am_type: AMType,
         denomination: Denomination,
-        description: Optional[str],
+        description: Optional[str] = None,
         parent: Optional[T] = None,
         counter_party: Optional[Entity] = None,
         color: Optional[Color] = None
@@ -198,13 +200,22 @@ class Account:
 
     def _denomination(self) -> Denomination:
         """Return the Denomination of this account"""
+        if self._cached_denomination is not None:
+            return self._cached_denomination
         if self._global_unit_id is not None:
-            return GlobalUnit.retrieve(self.session, self._global_unit_id)
-        return CustomUnit.retrieve(
-            self.entity,
-            self.session,
-            self._custom_unit_id
-        )
+            denomination = GlobalUnit.retrieve(
+                self.session,
+                self._global_unit_id
+            )
+        else:
+            denomination = CustomUnit.retrieve(
+                self.entity,
+                self.session,
+                self._custom_unit_id
+            )
+        assert isinstance(denomination, Denomination)
+        self._cached_denomination = denomination
+        return denomination
 
     class CreateArguments(Encodable):
         def __init__(
@@ -219,6 +230,8 @@ class Account:
         ) -> None:
 
             self._name = Account._Name(name)
+            if description is None:
+                description = ''
             self._description = Account._Description(description)
 
             if not isinstance(am_type, AMType):

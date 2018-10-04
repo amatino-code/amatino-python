@@ -304,3 +304,6 @@ class Ledger:
             row = self._rows[self._index]
             self._index += 1
             return row
+
+    def __len__(self):
+        return len(self.rows)

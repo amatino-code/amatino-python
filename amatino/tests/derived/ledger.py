@@ -40,7 +40,7 @@ class LedgerTest(TransactionTest):
                 self.record_failure('Unexpected non-LedgerRow type')
                 return
 
-        if len(ledger.rows) != 3:
+        if len(ledger) != 3:
             self.record_failure('Unexpected number of ledger rows')
             return
 
