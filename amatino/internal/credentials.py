@@ -11,5 +11,5 @@ class Credentials:
     credentials when authenticating and authorising requests to the Amatino
     API.
     """
-    api_key: str = NotImplemented
-    session_id: int = NotImplemented
+    api_key = NotImplemented
+    session_id = NotImplemented
