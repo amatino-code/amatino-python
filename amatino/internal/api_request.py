@@ -9,7 +9,7 @@ by public classes, and should not be used directly.
 from json import loads
 from urllib.request import Request
 from urllib.request import urlopen
-from urllib.request import HTTPError
+from urllib.error import HTTPError
 from amatino.internal.credentials import Credentials
 from amatino.internal.data_package import DataPackage
 from amatino.internal.url_parameters import UrlParameters

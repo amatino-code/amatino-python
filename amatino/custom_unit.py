@@ -12,6 +12,7 @@ from typing import Optional
 from typing import Type
 from typing import List
 from typing import Any
+from typing import Dict
 from amatino.internal.immutable import Immutable
 from amatino.internal.constrained_string import ConstrainedString
 from amatino.internal.constrained_integer import ConstrainedInteger
@@ -20,6 +21,7 @@ from amatino.internal.url_target import UrlTarget
 from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.api_request import ApiRequest
 from amatino.internal.http_method import HTTPMethod
+from amatino.internal.data_package import DataPackage
 from amatino.api_error import ApiError
 
 T = TypeVar('T', bound='CustomUnit')
@@ -43,7 +45,10 @@ class CustomUnit(Denomination):
     MAX_NAME_LENGTH = 1024
     MAX_EXPONENT_VALUE = 6
     MIN_EXPONENT_VALUE = 0
+    MAX_PRIORITY_VALUE = 10000
+    MIN_PRIORITY_VALUE = -10000
     _URL_KEY = 'custom_unit_id'
+    _PATH = '/custom_units'
 
     def __init__(
         self,
@@ -68,8 +73,36 @@ class CustomUnit(Denomination):
     entity: Entity = Immutable(lambda s: s._entity)
 
     @classmethod
-    def _create(self) -> None:
-        raise NotImplementedError
+    def create(
+        cls: Type[T],
+        entity: Entity,
+        session: Session,
+        name: str,
+        code: str,
+        exponent: int,
+        description: Optional[str] = None,
+        priority: Optional[int] = None
+    ) -> T:
+
+        arguments = CustomUnit.CreationArguments(
+            code,
+            name,
+            exponent,
+            priority,
+            description
+        )
+
+        parameters = UrlParameters(entity_id=entity.id_)
+
+        request = ApiRequest(
+            path=CustomUnit._PATH,
+            credentials=session,
+            method=HTTPMethod.POST,
+            data=DataPackage.from_object(arguments),
+            url_parameters=parameters
+        )
+
+        return CustomUnit._decode(session, entity, request.response_data)
 
     @classmethod
     def retrieve(
@@ -79,7 +112,18 @@ class CustomUnit(Denomination):
         custom_unit_id: int
     ) -> T:
 
-        raise NotImplementedError
+        target = UrlTarget.from_integer(cls._URL_KEY, custom_unit_id)
+        parameters = UrlParameters(entity_id=entity.id_, targets=[target])
+
+        request = ApiRequest(
+            path=cls._PATH,
+            method=HTTPMethod.GET,
+            data=None,
+            url_parameters=parameters,
+            credentials=session
+        )
+
+        return cls._decode(session, entity, request.response_data)
 
     @classmethod
     def _retrieve(
@@ -135,6 +179,10 @@ class CustomUnit(Denomination):
         entity: Entity,
         data: Any
     ) -> List[T]:
+
+        assert isinstance(session, Session)
+        assert isinstance(entity, Entity)
+
         if not isinstance(data, list):
             raise ApiError('Unexpected non-list data returned')
 
@@ -168,16 +216,56 @@ class CustomUnit(Denomination):
 
     def update(
         self,
-        name: str = None,
-        priority: int = None,
-        description: str = None,
-        exponent: str = None
+        name: Optional[str] = None,
+        code: Optional[str] = None,
+        priority: Optional[int] = None,
+        description: Optional[str] = None,
+        exponent: Optional[str] = None
     ) -> None:
         """
         Replace existing Custom Unit data with supplied data. Parameters
         not supplied will default to existing values.
         """
-        raise NotImplementedError
+        if name is None:
+            name = self.name
+        if code is None:
+            code = self.code
+        if priority is None:
+            priority = self.priority
+        if description is None:
+            description = self.description
+        if exponent is None:
+            exponent = self.exponent
+
+        assert isinstance(code, str)
+        assert isinstance(priority, int)
+        assert isinstance(description, str)
+        assert isinstance(exponent, int)
+
+        arguments = CustomUnit.UpdateArguments(
+            self.id_,
+            code,
+            name,
+            exponent,
+            priority,
+            description
+        )
+
+        parameters = UrlParameters(entity_id=self.entity.id_)
+
+        request = ApiRequest(
+            path=self._PATH,
+            method=HTTPMethod.PUT,
+            data=DataPackage.from_object(arguments),
+            url_parameters=parameters,
+            credentials=self.session
+        )
+
+        return CustomUnit._decode(
+            self.session,
+            self.entity,
+            request.response_data
+        )
 
     def delete(
         self,
@@ -198,7 +286,6 @@ class CustomUnit(Denomination):
         Used by instances of class CustomUnit to validate arguments provided
         for the creation of a new Custom Unit
         """
-
         def __init__(
             self,
             code: str,
@@ -210,61 +297,134 @@ class CustomUnit(Denomination):
 
             super().__init__()
 
-            self._code = ConstrainedString(
+            self._code = CustomUnit._Code(code)
+            self._name = CustomUnit._Name(name)
+            self._priority = CustomUnit._Priority(priority)
+            self._description = CustomUnit._Description(description)
+            self._exponent = CustomUnit._Exponent(exponent)
+
+            return
+
+        def serialise(self) -> dict:
+            data = {
+                'code': self._code.serialise(),
+                'name': self._name.serialise(),
+                'priority': self._priority.serialise(),
+                'description': self._description.serialise(),
+                'exponent': self._exponent.serialise()
+            }
+            return data
+
+    class UpdateArguments(Encodable):
+        def __init__(
+            self,
+            custom_unit_id: int,
+            code: str,
+            name: str,
+            exponent: int,
+            priority: Optional[int] = None,
+            description: Optional[str] = None
+        ) -> None:
+
+            if not isinstance(custom_unit_id, int):
+                raise TypeError('custom_unit_id must be of type `int`')
+
+            self._id = custom_unit_id
+
+            self._code = CustomUnit._Code(code)
+            self._name = CustomUnit._Name(name)
+            self._priority = CustomUnit._Priority(priority)
+            self._description = CustomUnit._Description(description)
+            self._exponent = CustomUnit._Exponent(exponent)
+
+            return
+
+        def serialise(self) -> Dict[str, Any]:
+            data = {
+                'custom_unit_id': self._id,
+                'code': self._code.serialise(),
+                'name': self._name.serialise(),
+                'priority': self._priority.serialise(),
+                'description': self._description.serialise(),
+                'exponent': self._exponent.serialise()
+            }
+            return data
+
+    class _Priority(Encodable):
+        def __init__(self, priority: Optional[int]) -> None:
+
+            self._priority = priority
+            if priority is None:
+                return
+
+            self._priority = ConstrainedInteger(
+                priority,
+                'priority',
+                CustomUnit.MAX_PRIORITY_VALUE,
+                CustomUnit.MIN_PRIORITY_VALUE
+            )
+            return
+
+        def serialise(self) -> Optional[int]:
+            if self._priority is None:
+                return None
+            assert isinstance(self._priority, ConstrainedInteger)
+            return self._priority.serialise()
+
+    class _Code(ConstrainedString):
+        def __init__(self, code: str) -> None:
+            super().__init__(
                 code,
                 'code',
                 CustomUnit.MAX_CODE_LENGTH,
                 CustomUnit.MIN_CODE_LENGTH
             )
-            self._name = ConstrainedString(
+            return
+
+    class _Name(ConstrainedString):
+        def __init__(self, name: str) -> None:
+            super().__init__(
                 name,
                 'name',
-                CustomUnit.MAX_DESCRIPTION_LENGTH
+                CustomUnit.MAX_NAME_LENGTH
             )
-            self._priority = CustomUnit._Priority(priority)
-            self._description = ConstrainedString(
+            return
+
+    class _Description(ConstrainedString):
+        def __init__(self, description: Optional[str]) -> None:
+            if description is None:
+                description = ''
+            super().__init__(
                 description,
                 'description',
                 CustomUnit.MAX_DESCRIPTION_LENGTH
             )
-            self._exponent = ConstrainedInteger(
+            return
+
+    class _Exponent(ConstrainedInteger):
+        def __init__(self, exponent: int) -> None:
+            super().__init__(
                 exponent,
                 'exponent',
                 CustomUnit.MAX_EXPONENT_VALUE,
                 CustomUnit.MIN_EXPONENT_VALUE
             )
-            self._package = {
-                'code': str(self._code),
-                'name': str(self._name),
-                'priority': self._priority.serialise(),
-                'description': str(self._description),
-                'exponent': self._exponent.serialise()
-            }
-
             return
 
-        def serialise(self) -> dict:
-            return self._package
-
-        class _Priority(Encodable):
-            def __init__(self, priority: Optional[int]) -> None:
-                if priority is not None and not isinstance(priority, int):
-                    raise TypeError('priority must be of type `int`')
-
-                self._priority: Optional[ConstrainedInteger] = priority
-
-                if priority is None:
-                    return
-
-                self._priority = ConstrainedInteger(
-                    priority,
-                    'priority',
-                    CustomUnit.MAX_PRIORITY_VALUE,
-                    CustomUnit.MIN_PRIORITY_VALUE
-                )
-                return
-
-            def serialise(self) -> Optional[int]:
-                if self._priority is None:
-                    return None
-                return self._priority.serialise()
+    def __repr__(self) -> str:
+        rep = '<amatino.CustomUnit at {memory}, id: {id_}, code: {code}, '
+        rep += 'name: {name}, priority: {priority}, exponent: {exponent}, '
+        rep += 'description: {description}, session: {session_id}, '
+        rep += 'entity: {entity_id}>'
+        representation = rep.format(
+            memory=hex(id(self)),
+            id_=str(self.id_),
+            code=self.code,
+            name=self.name,
+            priority=self.priority,
+            exponent=self.exponent,
+            description=self.description,
+            session_id=str(self.session.id_),
+            entity_id=self.entity.id_
+        )
+        return representation

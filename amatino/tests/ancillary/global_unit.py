@@ -29,10 +29,10 @@ class GlobalUnitTest(SessionTest):
         if not isinstance(usd.code, str):
             self.record_failure('Unexpected code type ' + str(type(usd.code)))
             return
-        
+
         if not isinstance(usd.name, str):
             self.record_failure('Unexpected name type ' + str(type(usd.name)))
             return
-        
+
         self.record_success()
         return

@@ -13,7 +13,7 @@ from amatino import AMType
 from urllib.error import HTTPError
 from typing import Optional
 
-NAME = 'Create, retrieve, update, delete Transactions'
+NAME = 'Create, retrieve, update, delete a Transaction'
 
 
 class TransactionTest(AccountTest):
@@ -35,7 +35,7 @@ class TransactionTest(AccountTest):
         if time is None:
             time = datetime.utcnow()
         if amount is None:
-            amount = Decimal(10) 
+            amount = Decimal(10)
 
         transaction = Transaction.create(
             self.session,

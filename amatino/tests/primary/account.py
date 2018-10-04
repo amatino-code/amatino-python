@@ -15,7 +15,7 @@ USD_UNIT_ID = 5
 class AccountTest(EntityTest):
     """Test the Account primary object"""
 
-    def __init__(self, name='Create, retrieve, update Account') -> None:
+    def __init__(self, name='Create, retrieve, update an Account') -> None:
 
         self.usd = None
         super().__init__(name)

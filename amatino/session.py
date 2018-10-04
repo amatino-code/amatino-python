@@ -50,6 +50,7 @@ class Session(Credentials):
     api_key: str = Immutable(lambda s: s._api_key)
     session_id: int = Immutable(lambda s: s._session_id)
     user_id: int = Immutable(lambda s: s._user_id)
+    id_ = Immutable(lambda s: s.session_id)
 
     @classmethod
     def create_with_email(cls: Type[T], email: str, secret: str) -> T:

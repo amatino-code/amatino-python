@@ -58,7 +58,7 @@ class EntityUpdateArguments(Encodable):
         upg = permissions_graph
         if False in [isinstance(upg[k], dict) for k in upg]:
             raise TypeError('permissions_graph values must be of type `dict`')
-    
+
         return
 
     def serialise(self):

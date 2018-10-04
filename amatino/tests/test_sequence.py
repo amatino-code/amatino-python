@@ -8,10 +8,12 @@ Provides a constant manifest of tests to execute
 import amatino.tests.primary as primary
 import amatino.tests.ancillary as ancillary
 import amatino.tests.derived as derived
+from amatino.tests.ancillary.custom_unit import CustomUnitTest
 
 SEQUENCE = [
     ancillary.SessionTest,
     ancillary.GlobalUnitTest,
+    CustomUnitTest,
     primary.EntityTest,
     primary.AccountTest,
     primary.TransactionTest,
