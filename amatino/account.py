@@ -238,7 +238,7 @@ class Account:
             if not isinstance(am_type, AMType):
                 raise TypeError('am_type must be of type `AMType`')
 
-            self._type: AMType = am_type
+            self._type = am_type
             self._parent = Account._Parent(parent)
             self._global_unit = Account._GlobalUnit(denomination)
             self._custom_unit = Account._CustomUnit(denomination)
