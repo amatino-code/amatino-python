@@ -8,13 +8,9 @@ Amatino gives you a full set of tools to store, organise and retrieve financial 
 
 ## Under construction
 
-Right now, the Amatino API offers a full range of accounting services via HTTP requests. However, this Amatino Python library is in an 'Alpha' state. Its capabilities are limited. One class is available: `AmatinoAlpha`.
+Right now, the Amatino API offers a full range of accounting services via HTTP requests. However, this Amatino Python library is in an 'Alpha' state. Its capabilities are limited. A subset of full Amatino features are available.
 
-`AmatinoAlpha` is a thin wrapper around asynchronous HTTP requests to the Amatino API. It facilitates testing and experimentation with the Amatino API without having to resort to raw HTTP request manipulation and HMAC computation.
-
-Amatino Python will eventually offer expressive, object-oriented interfaces for all Amatino API services. To be notified when Amatino Python enters a Beta state, with all capabilities available, sign up to the [Amatino Development Newsletter](https://amatino.io/newsletter).
-
-In the mean time, you may wish to review [Amatino's HTTP documentation](https://amatino.io/documentation) to see what capabilities you can expect from Amatino Python in the future.
+To see what proportion of Amatino features are ready in Amatino Python, check out the [Documentation](https://github.com/amatino-code/amatino-python/wiki/Documentation) page. Linked classes are available, un-linked ones are still under construction.
 
 ## Installation
 
@@ -28,42 +24,65 @@ To use Amatino Python, you will need an active Amatino subscription. You can sta
 
 ## Example Usage
 
-The ````AmatinoAlpha```` object allows you to use the Amatino API without dealing with raw HTTP requests or HMACs. It lacks the expressive syntax, input validation, and error handling that Amatino Python will have in the beta stage.
+The first step is to login to  Amatino by creating a [Session](https://github.com/amatino-code/amatino-python/wiki/Session) instance. That Session then becomes your key to using Amatino classes.
 
-Initialise an  `AmatinoAlpha` instance like so:
+```python
+from amatino import Session
 
-````Python
-from amatino import AmatinoAlpha
-
-amatino_alpha = AmatinoAlpha(
-    email="clever@cookie.com",
-    secret="high entropy passphrase"
+session = Session.create_with_email(
+  email='clever@cookie.com',
+  secret='uncrackable epic passphrase!'
 )
-````
+```
 
-Requests may then be made:
+Amatino stores financial data inside discrete [Entities](https://github.com/amatino-code/amatino-python/wiki/Entity). An Entity might describe a person, project, company, or some other entity which you wish to describe with financial data.
 
-````Python
-entity = amatino_alpha.request(
-    path="/entities",
-    query_string=None,
-    method="POST",
-    body=[{
-        "name": "My First Entity",
-        "description": None,
-        "region_id": None
-    }]
+```python
+from amatino import Entity
+
+mega_corporation = Entity.create(
+  session=session,  # Created above
+  name='Mega Corporation'
 )
-````
+```
 
-Wherein `path`, `query_string`, `method` and `body` parameters are formed according to the requirements laid out in the [Amatino API HTTP documentation](https://amatino.io/documentation).
+Entities are structured as a hierarchical tree of [Accounts](https://github.com/amatino-code/amatino-python/wiki/Account). You might wish to create a chart of Accounts that mirror the real-world structure of the Entity you are describing.
 
-For example, the above request created an [Entity](https://amatino.io/documentation/entities). The requirements for Entity creation are available at https://amatino.io/documentation/entities#action-Create.
+```python
+from amatino import Account
 
-For more examples of `AmatinoAlpha` usage, see the [getting started guide](https://amatino.io/articles/getting-started).
+revenue = Account.create(
+  session=session,
+  entity=mega_corporation,  # Created above
+  description='Revenue from world domination',
+  am_type=AMType.revenue,  # An AMType enumeration option
+  denomination=USD  # A GlobalUnit
+)
+```
+
+The real fun begins with [Transactions](https://github.com/amatino-code/amatino-python/wiki/Transaction), where debits and credits come into play
+
+```python
+from amatino import Transaction, Entry, Side
+from datetime import datetime
+from decimal import Decimal
+
+revenue_recognition = Transaction.create(
+  session=session,
+  entity=mega_corporation,
+  time=datetime.utcnow(),
+  entries=[
+    Entry(Side.debit, Decimal(10), cash),
+    Entry(Side.credit, Decimal(5), revenue),
+    Entry(Side.credit, Decimal(5), customer_deposits)
+  ]
+  denomination=USD
+)
+```
+
+Check out the full range of available classes, including Ledgers, in the [Amatino Python documentation](https://github.com/amatino-code/amatino-python/wiki/Documentation)
 
 ## API stability & versioning
-
 
 Amatino Python obeys the [Semantic Version](https://semver.org) convention. Until v1.0.0, the Python API (not to be confused with the Amatino HTTP API) should be considered unstable and liable to change at any time.
 
@@ -84,7 +103,8 @@ Pull requests, comments, issues, forking, and so on are also [most welcome on Gi
  - [Development newsletter](https://amatino.io/newsletter)
  - [Discussion forum](https://amatino.io/discussion) 
  - [More Amatino client libraries](https://github.com/amatino-code)
- - [Documentation](https://amatino.io/documentation)
+ - [HTTP Documentation](https://amatino.io/documentation)
+ - [Python Documentation](https://github.com/amatino-code/amatino-python/wiki/Documentation)
  - [Billing and account management](https://amatino.io/billing)
  - [About Amatino Pty Ltd](https://amatino.io/about)
 
