@@ -38,7 +38,7 @@ setup(
     packages=find_packages(exclude=('tests', 'tests.*')),
     long_description_content_type="text/markdown",
     python_requires='>=3',
-    install_requires=['typing']
+    install_requires=['typing'],
     project_urls={
         'Twitter': 'https://twitter.com/amatinoapi',
         'Github Repository': 'https://github.com/amatino-code/amatino-python',
