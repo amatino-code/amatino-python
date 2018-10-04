@@ -65,7 +65,7 @@ class Account:
         self._global_unit_id = global_unit_id
         self._custom_unit_id = custom_unit_id
         self._counterparty_id = counterparty_id
-        self._color: Color = color
+        self._color = color
 
         self._cached_denomination = None
 
