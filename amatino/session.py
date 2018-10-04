@@ -110,9 +110,9 @@ class Session(Credentials):
             raise ApiError('Unexpected non-dict type when decoding Session')
 
         try:
-            api_key: str = response_data['api_key']
-            session_id: int = response_data['session_id']
-            user_id: int = response_data['user_id']
+            api_key = response_data['api_key']
+            session_id = response_data['session_id']
+            user_id = response_data['user_id']
         except KeyError as error:
             message = 'Expected key "{key}" missing from response data'
             message.format(key=error.args[0])
