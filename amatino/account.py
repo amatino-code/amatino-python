@@ -83,6 +83,7 @@ class Account:
     counterparty_id = Immutable(lambda s: s._counterparty_id)
     color = Immutable(lambda s: s._color)
     parent_id = Immutable(lambda s: s._parent_account_id)
+    parent = Immutable(lambda s: s._parent())
 
     @classmethod
     def create(
@@ -325,6 +326,13 @@ class Account:
         accounts = [decode(a) for a in data]
 
         return accounts
+
+    def _parent(self) -> Optional['Account']:
+        """Return this Account's parent, if it has one"""
+        if self.parent_id is None:
+            return None
+        assert isinstance(self.parent_id, int)
+        return Account.retrieve(self.session, self.entity, self.parent_id)
 
     class UpdateArguments(Encodable):
         def __init__(
