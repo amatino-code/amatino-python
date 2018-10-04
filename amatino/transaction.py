@@ -86,7 +86,6 @@ class Transaction:
     entries = Immutable(lambda s: s._entries)
     global_unit_id = Immutable(lambda s: s._global_unit_id)
     custom_unit_id = Immutable(lambda s: s._custom_unit_id)
-    global_unit = Immutable(lambda s: GlobalUnit.retrieve(s.global_unit_id))
     denomination = Immutable(lambda s: s._denomination())
 
     @classmethod
