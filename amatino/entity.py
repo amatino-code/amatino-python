@@ -59,14 +59,14 @@ class Entity:
 
         return
 
-    session: Session = Immutable(lambda s: s._session)
-    id_: str = Immutable(lambda s: s._entity_id)
-    name: str = Immutable(lambda s: s._name)
-    description: str = Immutable(lambda s: s._description)
-    region_id: int = Immutable(lambda s: s._region_id)
-    owner_id: int = Immutable(lambda s: s._owner_id)
-    active: bool = Immutable(lambda s: s._active)
-    permissions_graph: dict = Immutable(lambda s: s._permissions_graph)
+    session = Immutable(lambda s: s._session)
+    id_ = Immutable(lambda s: s._entity_id)
+    name = Immutable(lambda s: s._name)
+    description = Immutable(lambda s: s._description)
+    region_id = Immutable(lambda s: s._region_id)
+    owner_id = Immutable(lambda s: s._owner_id)
+    active = Immutable(lambda s: s._active)
+    permissions_graph = Immutable(lambda s: s._permissions_graph)
 
     @classmethod
     def create(
