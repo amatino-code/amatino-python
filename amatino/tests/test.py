@@ -22,9 +22,9 @@ class Test:
         if not isinstance(test_name, str):
             raise TypeError('test_name must be of type `str`')
 
-        raw_user_id: Optional[str] = environ['AMATINO_TEST_USER_ID']
-        email: Optional[str] = environ['AMATINO_TEST_EMAIL']
-        secret: Optional[str] = environ['AMATINO_TEST_SECRET']
+        raw_user_id = environ['AMATINO_TEST_USER_ID']
+        email = environ['AMATINO_TEST_EMAIL']
+        secret = environ['AMATINO_TEST_SECRET']
 
         if raw_user_id is None:
             raise RuntimeError('AMATINO_TEST_USER_ID env variable required')
@@ -40,13 +40,13 @@ class Test:
         if secret is None:
             raise RuntimeError('AMATINO_TEST_SECRET env variable required')
 
-        self.user_id: int = user_id
-        self.email: str = email
-        self.secret: str = secret
+        self.user_id = user_id
+        self.email = email
+        self.secret = secret
 
         self._name = test_name
-        self._note: Optional[Any] = None
-        self._passed: Optional[bool] = None
+        self._note = None
+        self._passed = None
 
         return
 
