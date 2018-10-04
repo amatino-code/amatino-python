@@ -47,9 +47,9 @@ class Session(Credentials):
 
         return
 
-    api_key: str = Immutable(lambda s: s._api_key)
-    session_id: int = Immutable(lambda s: s._session_id)
-    user_id: int = Immutable(lambda s: s._user_id)
+    api_key = Immutable(lambda s: s._api_key)
+    session_id = Immutable(lambda s: s._session_id)
+    user_id = Immutable(lambda s: s._user_id)
     id_ = Immutable(lambda s: s.session_id)
 
     @classmethod
