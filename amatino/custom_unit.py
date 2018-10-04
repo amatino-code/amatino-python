@@ -69,8 +69,8 @@ class CustomUnit(Denomination):
 
         return
 
-    session: Session = Immutable(lambda s: s._session)
-    entity: Entity = Immutable(lambda s: s._entity)
+    session = Immutable(lambda s: s._session)
+    entity = Immutable(lambda s: s._entity)
 
     @classmethod
     def create(
