@@ -12,3 +12,5 @@ from amatino.ledger import Ledger
 from amatino.recursive_ledger import RecursiveLedger
 from amatino.ledger_row import LedgerRow
 from amatino.user import User
+from amatino.balance import Balance
+from amatino.recursive_balance import RecursiveBalance

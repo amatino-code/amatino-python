@@ -9,7 +9,7 @@ from amatino.internal.immutable import Immutable
 class Denomination:
     """
     Abstract class defining an interface for units of account. Adopted by
-    Custom Units and Global Units.]
+    Custom Units and Global Units.
     """
     def __init__(
         self,

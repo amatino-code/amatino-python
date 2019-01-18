@@ -15,7 +15,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as readme_file:
 
 setup(
     name='amatino',
-    version='0.0.7',
+    version='0.0.8',
     description='Bindings for the Amatino API, an accounting & financial data engine',
     long_description=LONG_DESCRIPTION,
     url='https://amatino.io',
