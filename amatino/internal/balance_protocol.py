@@ -87,6 +87,19 @@ class BalanceProtocol:
     account = Immutable(
         lambda s: Account.retrieve(s.entity.session, s.entity, s.account_id)
     )
+    denomination = Immutable(lambda s: s._denomination())
+    global_unit_id = Immutable(lambda s: s._global_unit_id)
+    custom_unit_id = Immutable(lambda s: s._custom_unit_id)
+
+    def _denomination(self) -> Denomination:
+        """Return the underlying denomination of this Balance"""
+        if self._global_unit_id is None:
+            return CustomUnit.retrieve(
+                self.entity,
+                self.session,
+                self._custom_unit_id
+            )
+        return GlobalUnit.retrieve(self.session, self._global_unit_id)
 
     @classmethod
     def retrieve_many(
