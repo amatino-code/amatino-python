@@ -19,5 +19,7 @@ SEQUENCE = [
     primary.AccountTest,
     primary.TransactionTest,
     derived.LedgerTest,
-    derived.RecursiveLedgerTest
+    derived.RecursiveLedgerTest,
+    derived.BalanceTest,
+    derived.RecursiveBalanceTest
 ]

@@ -8,7 +8,6 @@ from amatino.tests.primary.transaction import TransactionTest
 from amatino import Account
 from amatino import Transaction
 from amatino import RecursiveLedger
-from amatino import Ledger
 from amatino import Side
 from amatino import Entry
 from decimal import Decimal
