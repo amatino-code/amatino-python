@@ -48,6 +48,7 @@ class BalanceProtocol:
         recursive: bool,
         global_unit_id: Optional[int],
         custom_unit_id: Optional[int],
+        account_id: int,
         magnitude: Decimal
     ) -> None:
 
@@ -62,6 +63,7 @@ class BalanceProtocol:
             assert isinstance(global_unit_id, int)
         if custom_unit_id is not None:
             assert isinstance(custom_unit_id, int)
+        assert isinstance(account_id, int)
         assert isinstance(magnitude, Decimal)
 
         self._entity = entity
@@ -71,6 +73,7 @@ class BalanceProtocol:
         self._custom_unit_id = custom_unit_id
         self._global_unit_id = global_unit_id
         self._magnitude = magnitude
+        self._account_id = account_id
 
         return
 
@@ -80,6 +83,10 @@ class BalanceProtocol:
     generated_time = Immutable(lambda s: s._generated_time.raw)
     magnitude = Immutable(lambda s: s._magnitude)
     is_recursive = Immutable(lambda s: s._recursive)
+    account_id = Immutable(lambda s: s._account_id)
+    account = Immutable(
+        lambda s: Account.retrieve(s.entity.session, s.entity, s.account_id)
+    )
 
     @classmethod
     def retrieve_many(
@@ -133,6 +140,7 @@ class BalanceProtocol:
                 balance['recursive'],
                 balance['global_unit_denomination'],
                 balance['custom_unit_denomination'],
+                balance['account_id'],
                 Decimal(balance['balance'])
             ))
 

@@ -55,7 +55,7 @@ class RecursiveBalanceTest(TransactionTest):
             return
 
         try:
-            balance = RecursiveBalance.retrieve(entity=self.entity, self.asset)
+            balance = RecursiveBalance.retrieve(self.entity, self.asset)
         except Exception as error:
             self.record_failure(error)
             return
