@@ -21,6 +21,7 @@ from amatino.internal.url_target import UrlTarget
 from amatino.internal.url_parameters import UrlParameters
 from amatino.api_error import ApiError
 from amatino.missing_key import MissingKey
+from amatino.internal.am_amount import AmatinoAmount
 from decimal import Decimal
 from typing import TypeVar
 from typing import Optional
@@ -316,7 +317,7 @@ class Transaction:
             try:
                 entry = Entry(
                     side=Side(obj['side']),
-                    amount=Decimal(obj['amount']),
+                    amount=AmatinoAmount.decode(obj['amount']),
                     account_id=obj['account_id'],
                     description=obj['description']
                 )

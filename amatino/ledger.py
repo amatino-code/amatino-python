@@ -21,7 +21,7 @@ from amatino.unexpected_response_type import UnexpectedResponseType
 from amatino.missing_key import MissingKey
 from amatino.internal.http_method import HTTPMethod
 from amatino.internal.data_package import DataPackage
-from decimal import Decimal
+from amatino.internal.am_amount import AmatinoAmount
 from typing import Optional
 from typing import TypeVar
 from typing import Type
@@ -204,9 +204,9 @@ class Ledger:
                 description=data[2],
                 opposing_account_id=data[3],
                 opposing_account_name=data[4],
-                debit=Decimal(data[5]),
-                credit=Decimal(data[6]),
-                balance=Decimal(data[7])
+                debit=AmatinoAmount.decode(data[5]),
+                credit=AmatinoAmount.decode(data[6]),
+                balance=AmatinoAmount.decode(data[7])
             )
 
             return row
