@@ -42,8 +42,8 @@ class TransactionTest(AccountTest):
             self.entity,
             datetime.utcnow(),
             [
-                Entry(Side.debit, Decimal(10), self.asset),
-                Entry(Side.credit, Decimal(10), self.liability)
+                Entry(Side.debit, amount, self.asset),
+                Entry(Side.credit, amount, self.liability)
             ],
             self.usd,
             'Test transaction'
