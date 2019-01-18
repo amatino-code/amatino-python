@@ -25,6 +25,7 @@ class GlobalUnitTest(SessionTest):
             usd = GlobalUnit.retrieve(self.session, USD_UNIT_ID)
         except Exception as error:
             self.record_failure(error)
+            return
 
         if not isinstance(usd.code, str):
             self.record_failure('Unexpected code type ' + str(type(usd.code)))
