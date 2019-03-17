@@ -12,7 +12,6 @@ from typing import Dict
 from datetime import datetime
 from amatino.denominated import Denominated
 from amatino.denomination import Denomination
-from amatino.account import Account
 from amatino.decodable import Decodable
 from amatino.internal.data_package import DataPackage
 from amatino.internal.api_request import ApiRequest
@@ -52,8 +51,8 @@ class Performance(Denominated, Decodable):
     A Performance may be retrieved to an arbitrary depth. Depth in the
     Performance context is the number of levels down the Account hierarchy
     Amatino should go when retrieving the Performance. For example, if a
-    top-level Account has child accounts three layers deep, then specifying a 
-    epth of three will retrieve all those children.
+    top-level Account has child accounts three layers deep, then specifying a
+    depth of three will retrieve all those children.
 
     Regardless of the depth you specify, Amatino will calculate recursive
     balances at full depth.
@@ -88,6 +87,7 @@ class Performance(Denominated, Decodable):
         if expenses is not None:
             assert isinstance(expenses, list)
             assert False not in [isinstance(e, TreeNode) for e in expenses]
+        assert isinstance(depth, int)
 
         self._entity = entity
         self._start_time = start_time
@@ -128,11 +128,11 @@ class Performance(Denominated, Decodable):
 
             income = None
             if data['income'] is not None:
-                income = TreeNode.decode_many('income')
+                income = TreeNode.decode_many(entity, data['income'])
 
             expenses = None
             if data['expenses'] is not None:
-                expenses = TreeNode.decode_many('expenses')
+                expenses = TreeNode.decode_many(entity, data['expenses'])
 
             performance = cls(
                 entity,
@@ -151,11 +151,7 @@ class Performance(Denominated, Decodable):
         return performance
 
     @classmethod
-    def retrieve(
-        cls: Type[T],
-        entity: Entity,
-        arguments: K
-    ) -> T:
+    def retrieve(cls: Type[T], entity: Entity, arguments: K) -> T:
         """Retrieve a Performance"""
         if not isinstance(entity, Entity):
             raise TypeError('entity must be of type `Entity`')
@@ -181,15 +177,11 @@ class Performance(Denominated, Decodable):
     class RetrieveArguments(Encodable):
         def __init__(
             self,
-            account: Account,
             start_time: datetime,
             end_time: datetime,
-            denomination: Optional[Denomination] = None,
+            denomination: Denomination,
             depth: Optional[int] = None
         ) -> None:
-
-            if not isinstance(account, Account):
-                raise TypeError('account must be of type `Account`')
 
             if not isinstance(start_time, datetime):
                 raise TypeError('start_time must be of type `datetime`')
@@ -197,20 +189,14 @@ class Performance(Denominated, Decodable):
             if not isinstance(end_time, datetime):
                 raise TypeError('end_time must be of type `datetime`')
 
-            if (
-                    denomination is not None
-                    and not isinstance(denomination, Denomination)
-            ):
-                raise TypeError(
-                    'If supplied, denomination must be of type `Denomination`'
-                )
+            if not isinstance(denomination, Denomination):
+                raise TypeError('denomination must be of type `Denomination`')
 
             if depth is not None and not isinstance(depth, int):
                 raise TypeError(
                     'If supplied, depth must be of type `int`'
                 )
 
-            self._account = account
             self._start_time = AmatinoTime(start_time)
             self._end_time = AmatinoTime(end_time)
             self._denomination = denomination
@@ -230,7 +216,6 @@ class Performance(Denominated, Decodable):
             custom_unit_id = self._denomination.id_
 
         data = {
-            'account_id': self._account.id_,
             'start_time': self._start_time.serialise(),
             'end_time': self._end_time.serialise(),
             'custom_unit_denomination': custom_unit_id,
