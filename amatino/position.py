@@ -159,7 +159,24 @@ class Position(Denominated, Decodable):
         return position
 
     @classmethod
-    def retrieve(cls: Type[T], entity: Entity, arguments: K) -> T:
+    def retrieve(
+        cls: Type[T],
+        entity: Entity,
+        balance_time: datetime,
+        denomination: Denomination,
+        depth: Optional[int] = None
+    ) -> T:
+
+        arguments = cls.RetrieveArguments(
+            balance_time=balance_time,
+            denomination=denomination,
+            depth=depth
+        )
+
+        return cls._retrieve(entity, arguments)
+
+    @classmethod
+    def _retrieve(cls: Type[T], entity: Entity, arguments: K) -> T:
         """Retrieve a Position"""
         if not isinstance(entity, Entity):
             raise TypeError('entity must be of type `Entity`')

@@ -88,11 +88,9 @@ class PositionTest(AccountTest):
             )
 
             position = Position.retrieve(
-                self.entity,
-                Position.RetrieveArguments(
-                    balance_time=datetime.utcnow(),
-                    denomination=self.usd
-                )
+                entity=self.entity,
+                balance_time=datetime.utcnow(),
+                denomination=self.usd
             )
 
             assert isinstance(position, Position)
