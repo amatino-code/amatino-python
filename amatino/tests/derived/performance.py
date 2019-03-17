@@ -100,12 +100,10 @@ class PerformanceTest(AccountTest):
             )
 
             performance = Performance.retrieve(
-                self.entity,
-                Performance.RetrieveArguments(
-                    datetime.utcnow() - timedelta(days=2),
-                    datetime.utcnow() + timedelta(days=2),
-                    self.usd
-                )
+                entity=self.entity,
+                start_time=datetime.utcnow() - timedelta(days=2),
+                end_time=datetime.utcnow() + timedelta(days=2),
+                denomination=self.usd
             )
 
             assert isinstance(performance, Performance)

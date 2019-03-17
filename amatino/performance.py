@@ -151,7 +151,26 @@ class Performance(Denominated, Decodable):
         return performance
 
     @classmethod
-    def retrieve(cls: Type[T], entity: Entity, arguments: K) -> T:
+    def retrieve(
+        cls: Type[T],
+        entity: Entity,
+        start_time: datetime,
+        end_time: datetime,
+        denomination: Denomination,
+        depth: Optional[int] = None
+    ) -> T:
+
+        arguments = cls.RetrieveArguments(
+            start_time=start_time,
+            end_time=end_time,
+            denomination=denomination,
+            depth=depth
+        )
+
+        return cls._retrieve(entity, arguments)
+
+    @classmethod
+    def _retrieve(cls: Type[T], entity: Entity, arguments: K) -> T:
         """Retrieve a Performance"""
         if not isinstance(entity, Entity):
             raise TypeError('entity must be of type `Entity`')
