@@ -120,7 +120,7 @@ class BalanceProtocol:
         parameters = UrlParameters(entity_id=entity.id_)
 
         request = ApiRequest(
-            path=cls._PATH,
+            path=cls.PATH,
             method=HTTPMethod.GET,
             credentials=entity.session,
             data=data,
