@@ -21,5 +21,7 @@ SEQUENCE = [
     derived.LedgerTest,
     derived.RecursiveLedgerTest,
     derived.BalanceTest,
-    derived.RecursiveBalanceTest
+    derived.RecursiveBalanceTest,
+    derived.PositionTest,
+    derived.PerformanceTest
 ]
