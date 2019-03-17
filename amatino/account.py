@@ -25,11 +25,12 @@ from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.url_target import UrlTarget
 from amatino.api_error import ApiError
 from amatino.missing_key import MissingKey
+from amatino.denominated import Denominated
 
 T = TypeVar('T', bound='Account')
 
 
-class Account:
+class Account(Denominated):
     """
     An Amatino Account is collection of related economic activity. For example,
     an Account might represent a bank account, income from a particular client,
@@ -79,7 +80,6 @@ class Account:
     description = Immutable(lambda s: s._description)
     global_unit_id = Immutable(lambda s: s._global_unit_id)
     custom_unit_id = Immutable(lambda s: s._custom_unit_id)
-    denomination = Immutable(lambda s: s._denomination())
     counterparty_id = Immutable(lambda s: s._counterparty_id)
     color = Immutable(lambda s: s._color)
     parent_id = Immutable(lambda s: s._parent_account_id)
