@@ -41,7 +41,8 @@ class PerformanceTest(AccountTest):
                 self.entity,
                 'Test income child',
                 income.am_type,
-                income.denomination
+                income.denomination,
+                parent=income
             )
 
             expense = self.create_account(
