@@ -180,7 +180,7 @@ class BalanceProtocol:
             self,
             account: Account,
             balance_time: Optional[datetime] = None,
-            denomination: Optional[datetime] = None
+            denomination: Optional[Denomination] = None
         ) -> None:
 
             if not isinstance(account, Account):
