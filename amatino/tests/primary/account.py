@@ -8,6 +8,7 @@ from amatino import Entity
 from amatino import AMType
 from amatino import GlobalUnit
 from amatino.tests.primary.entity import EntityTest
+from amatino.internal.immutable import Immutable
 
 USD_UNIT_ID = 5
 
@@ -17,7 +18,6 @@ class AccountTest(EntityTest):
 
     def __init__(self, name='Create, retrieve, update an Account') -> None:
 
-        self.usd = None
         super().__init__(name)
         self.create_entity()
         if not isinstance(self.entity, Entity):
@@ -26,10 +26,17 @@ class AccountTest(EntityTest):
             )
         return
 
-    def create_account(self, amt=AMType.asset, name='Test account') -> Account:
+    usd = Immutable(lambda s: s._usd())
+    _account_test_cached_usd = None
 
-        if self.usd is None:
-            self.usd = GlobalUnit.retrieve(self.session, USD_UNIT_ID)
+    def _usd(self) -> GlobalUnit:
+        if self._account_test_cached_usd is not None:
+            return self._account_test_cached_usd
+        usd = GlobalUnit.retrieve(self.session, USD_UNIT_ID)
+        self._account_test_cached_usd = usd
+        return usd
+
+    def create_account(self, amt=AMType.asset, name='Test account') -> Account:
 
         account = Account.create(
             self.session,
