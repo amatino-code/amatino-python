@@ -14,3 +14,6 @@ from amatino.ledger_row import LedgerRow
 from amatino.user import User
 from amatino.balance import Balance
 from amatino.recursive_balance import RecursiveBalance
+from amatino.performance import Performance
+from amatino.position import Position
+from amatino.tree_node import TreeNode
