@@ -28,12 +28,12 @@ class Decodable:
     def decode_many(cls: Type[T], entity: Entity, data: Any) -> List[T]:
         if not isinstance(data, list):
             raise UnexpectedResponseType(data, list)
-        return [cls.decode(o) for o in data]
+        return [cls.decode(entity, o) for o in data]
 
     @classmethod
     def deserialise(cls: Type[T], entity: Entity, data: str) -> T:
-        return cls.decode(loads(data))
+        return cls.decode(entity, loads(data))
 
     @classmethod
     def deserialise_many(cls: Type[T], entity: Entity, data: str) -> List[T]:
-        return cls.decode_many(loads(data))
+        return cls.decode_many(entity, loads(data))

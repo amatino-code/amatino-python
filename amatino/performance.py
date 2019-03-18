@@ -103,9 +103,9 @@ class Performance(Denominated, Decodable):
 
     entity = Immutable(lambda s: s._entity)
     session = Immutable(lambda s: s._entity.session)
-    start_time = Immutable(lambda s: s._start_time)
-    end_time = Immutable(lambda s: s._end_time)
-    generated_time = Immutable(lambda s: s._generated_time)
+    start_time = Immutable(lambda s: s._start_time.raw)
+    end_time = Immutable(lambda s: s._end_time.raw)
+    generated_time = Immutable(lambda s: s._generated_time.raw)
     custom_unit_id = Immutable(lambda s: s._custom_unit_id)
     global_unit_id = Immutable(lambda s: s._global_unit_id)
     income = Immutable(lambda s: s._income)
@@ -135,15 +135,15 @@ class Performance(Denominated, Decodable):
                 expenses = TreeNode.decode_many(entity, data['expenses'])
 
             performance = cls(
-                entity,
-                AmatinoTime.decode(data['start_time']),
-                AmatinoTime.decode(data['end_time']),
-                AmatinoTime.decode(data['generated_time']),
-                data['custom_unit_denomination'],
-                data['global_unit_denomination'],
-                income,
-                expenses,
-                data['depth']
+                entity=entity,
+                start_time=AmatinoTime.decode(data['start_time']),
+                end_time=AmatinoTime.decode(data['end_time']),
+                generated_time=AmatinoTime.decode(data['generated_time']),
+                custom_unit_id=data['custom_unit_denomination'],
+                global_unit_id=data['global_unit_denomination'],
+                income=income,
+                expenses=expenses,
+                depth=data['depth']
             )
         except KeyError as error:
             raise MissingKey(error.args[0])
@@ -180,7 +180,7 @@ class Performance(Denominated, Decodable):
                 'arguments must be of type Performance.RetrieveArguments'
             )
 
-        data = DataPackage(object_data=arguments)
+        data = DataPackage(object_data=arguments, override_listing=True)
         parameters = UrlParameters(entity_id=entity.id_)
 
         request = ApiRequest(
@@ -223,23 +223,23 @@ class Performance(Denominated, Decodable):
 
             return
 
-    def serialise(self) -> Dict[str, Any]:
+        def serialise(self) -> Dict[str, Any]:
 
-        global_unit_id = None
-        custom_unit_id = None
+            global_unit_id = None
+            custom_unit_id = None
 
-        if isinstance(self._denomination, GlobalUnit):
-            global_unit_id = self._denomination.id_
-        else:
-            assert isinstance(self._denomination, CustomUnit)
-            custom_unit_id = self._denomination.id_
+            if isinstance(self._denomination, GlobalUnit):
+                global_unit_id = self._denomination.id_
+            else:
+                assert isinstance(self._denomination, CustomUnit)
+                custom_unit_id = self._denomination.id_
 
-        data = {
-            'start_time': self._start_time.serialise(),
-            'end_time': self._end_time.serialise(),
-            'custom_unit_denomination': custom_unit_id,
-            'global_unit_denomination': global_unit_id,
-            'depth': self._depth
-        }
+            data = {
+                'start_time': self._start_time.serialise(),
+                'end_time': self._end_time.serialise(),
+                'custom_unit_denomination': custom_unit_id,
+                'global_unit_denomination': global_unit_id,
+                'depth': self._depth
+            }
 
-        return data
+            return data

@@ -13,5 +13,4 @@ class RecursiveBalance(BalanceProtocol):
     an Account, and all of that Account's children.
     """
 
-    _PATH = '/accounts/balance/recursive'
-    PATH = Immutable(lambda s: s._PATH)
+    PATH = '/accounts/balance/recursive'

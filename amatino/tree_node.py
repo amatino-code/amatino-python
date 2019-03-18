@@ -82,7 +82,9 @@ class TreeNode(Decodable):
     am_type = Immutable(lambda s: s._am_type)
     children = Immutable(lambda s: s._children)
 
-    has_children = Immutable(lambda s: s._children is not None)
+    has_children = Immutable(
+        lambda s: s._children is not None and len(s._children) > 0
+    )
     account = Immutable(lambda s: s._account())
 
     _node_cached_account = None

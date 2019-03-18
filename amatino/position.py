@@ -102,17 +102,23 @@ class Position(Denominated, Decodable):
         return
 
     entity = Immutable(lambda s: s._entity)
-    balance_time = Immutable(lambda s: s._balance_time)
-    generated_time = Immutable(lambda s: s._generated_time)
+    balance_time = Immutable(lambda s: s._balance_time.raw)
+    generated_time = Immutable(lambda s: s._generated_time.raw)
     custom_unit_id = Immutable(lambda s: s._custom_unit_id)
     global_unit_id = Immutable(lambda s: s._global_unit_id)
     assets = Immutable(lambda s: s._assets)
     liabilities = Immutable(lambda s: s._liabilities)
     equities = Immutable(lambda s: s._equities)
 
-    has_assets = Immutable(lambda s: s._assets is not None)
-    has_liabilities = Immutable(lambda s: s._liabilities is not None)
-    has_equities = Immutable(lambda s: s._equities is not None)
+    has_assets = Immutable(
+        lambda s: s._assets is not None and len(s._assets) > 0
+    )
+    has_liabilities = Immutable(
+        lambda s: s._liabilities is not None and len(s._liabilities) > 0
+    )
+    has_equities = Immutable(
+        lambda s: s._equities is not None and len(s._equities) > 0
+    )
 
     @classmethod
     def decode(
@@ -186,7 +192,7 @@ class Position(Denominated, Decodable):
                 'arguments must be of type Position.RetrieveArguments'
             )
 
-        data = DataPackage(object_data=arguments)
+        data = DataPackage(object_data=arguments, override_listing=True)
         parameters = UrlParameters(entity_id=entity.id_)
 
         request = ApiRequest(
@@ -216,8 +222,8 @@ class Position(Denominated, Decodable):
             if depth is not None and not isinstance(depth, int):
                 raise TypeError('If supplied, depth must be `int`')
 
-            self._balance_time = balance_time
-            self._denomimation = denomination
+            self._balance_time = AmatinoTime(balance_time)
+            self._denomination = denomination
             self._depth = depth
 
             return
@@ -234,8 +240,7 @@ class Position(Denominated, Decodable):
                 custom_unit_id = self._denomination.id_
 
             data = {
-                'start_time': self._start_time.serialise(),
-                'end_time': self._end_time.serialise(),
+                'balance_time': self._balance_time.serialise(),
                 'custom_unit_denomination': custom_unit_id,
                 'global_unit_denomination': global_unit_id,
                 'depth': self._depth

@@ -12,5 +12,4 @@ class Balance(BalanceProtocol):
     A Balance represents the sum total value of all Entries party to an Account.
     """
 
-    _PATH = '/accounts/balance'
-    PATH = Immutable(lambda s: s._PATH)
+    PATH = '/accounts/balance'

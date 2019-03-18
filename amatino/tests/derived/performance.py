@@ -55,8 +55,8 @@ class PerformanceTest(AccountTest):
                 self.entity,
                 datetime.utcnow(),
                 [
-                    Entry(Side.debit, Decimal('400'), income),
-                    Entry(Side.credit, Decimal('400'), expense)
+                    Entry(Side.credit, Decimal('400'), income),
+                    Entry(Side.debit, Decimal('400'), expense)
                 ],
                 self.usd,
                 'Test transaction 1'
@@ -67,9 +67,9 @@ class PerformanceTest(AccountTest):
                 self.entity,
                 datetime.utcnow(),
                 [
-                    Entry(Side.debit, Decimal('250'), income_child),
-                    Entry(Side.debit, Decimal('250'), income),
-                    Entry(Side.credit, Decimal('500'), expense)
+                    Entry(Side.credit, Decimal('250'), income_child),
+                    Entry(Side.credit, Decimal('250'), income),
+                    Entry(Side.debit, Decimal('500'), expense)
                 ],
                 self.usd,
                 'Test transaction 2'
@@ -80,10 +80,10 @@ class PerformanceTest(AccountTest):
                 self.entity,
                 datetime.utcnow() - timedelta(days=4),
                 [
-                    Entry(Side.debit, Decimal('1'), income),
-                    Entry(Side.credit, Decimal('1'), expense)
+                    Entry(Side.credit, Decimal('1'), income),
+                    Entry(Side.debit, Decimal('1'), expense)
                 ],
-                self.user,
+                self.usd,
                 'Test transaction 3'
             )
 
@@ -95,7 +95,7 @@ class PerformanceTest(AccountTest):
                     Entry(Side.debit, Decimal('50'), income),
                     Entry(Side.credit, Decimal('50'), expense)
                 ],
-                self.user,
+                self.usd,
                 'Test transaction 4'
             )
 
@@ -108,7 +108,7 @@ class PerformanceTest(AccountTest):
 
             assert isinstance(performance, Performance)
             assert performance.has_income
-            assert performance.has_expense
+            assert performance.has_expenses
             assert performance.global_unit_id == self.usd.id_
             assert performance.custom_unit_id is None
             assert isinstance(performance.denomination, GlobalUnit)

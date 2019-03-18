@@ -83,7 +83,7 @@ class PositionTest(AccountTest):
                     Entry(Side.debit, Decimal('1'), asset),
                     Entry(Side.credit, Decimal('1'), liability)
                 ],
-                self.user,
+                self.usd,
                 'Test transaction 3'
             )
 
