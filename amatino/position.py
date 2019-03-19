@@ -101,6 +101,7 @@ class Position(Denominated, Decodable):
 
         return
 
+    session = Immutable(lambda s: s._entity.session)
     entity = Immutable(lambda s: s._entity)
     balance_time = Immutable(lambda s: s._balance_time.raw)
     generated_time = Immutable(lambda s: s._generated_time.raw)
