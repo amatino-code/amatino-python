@@ -73,6 +73,7 @@ class TreeNode(Decodable):
 
         return
 
+    session = Immutable(lambda s: s._entity.session)
     entity = Immutable(lambda s: s._entity)
     account_id = Immutable(lambda s: s._account_id)
     depth = Immutable(lambda s: s._depth)
