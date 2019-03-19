@@ -111,8 +111,12 @@ class Performance(Denominated, Decodable):
     income = Immutable(lambda s: s._income)
     expenses = Immutable(lambda s: s._expenses)
 
-    has_income = Immutable(lambda s: s._income is not None)
-    has_expenses = Immutable(lambda s: s._expenses is not None)
+    has_income = Immutable(
+        lambda s: s._income is not None and len(s._income) > 0
+    )
+    has_expenses = Immutable(
+        lambda s: s._expenses is not None and len(s._expenses) > 0
+    )
 
     @classmethod
     def decode(
