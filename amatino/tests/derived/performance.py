@@ -132,6 +132,9 @@ class PerformanceTest(AccountTest):
             assert expense_root.account_balance == Decimal('900')
             assert expense_root.recursive_balance == Decimal('900')
 
+            assert performance.total_income == Decimal('900')
+            assert performance.total_expenses == Decimal('900')
+
         except Exception as error:
             self.record_failure(error)
             return
