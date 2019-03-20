@@ -10,6 +10,7 @@ from typing import Optional
 from typing import Any
 from typing import Dict
 from datetime import datetime
+from decimal import Decimal
 from amatino.denominated import Denominated
 from amatino.denomination import Denomination
 from amatino.decodable import Decodable
@@ -68,8 +69,8 @@ class Performance(Denominated, Decodable):
         generated_time: AmatinoTime,
         global_unit_id: Optional[int],
         custom_unit_id: Optional[int],
-        income: Optional[List[TreeNode]],
-        expenses: Optional[List[TreeNode]],
+        income: List[TreeNode],
+        expenses: List[TreeNode],
         depth: int
     ) -> None:
 
@@ -81,12 +82,10 @@ class Performance(Denominated, Decodable):
             assert isinstance(global_unit_id, int)
         if custom_unit_id is not None:
             assert isinstance(custom_unit_id, int)
-        if income is not None:
-            assert isinstance(income, list)
-            assert False not in [isinstance(i, TreeNode) for i in income]
-        if expenses is not None:
-            assert isinstance(expenses, list)
-            assert False not in [isinstance(e, TreeNode) for e in expenses]
+        assert isinstance(income, list)
+        assert False not in [isinstance(i, TreeNode) for i in income]
+        assert isinstance(expenses, list)
+        assert False not in [isinstance(e, TreeNode) for e in expenses]
         assert isinstance(depth, int)
 
         self._entity = entity
@@ -111,12 +110,11 @@ class Performance(Denominated, Decodable):
     income = Immutable(lambda s: s._income)
     expenses = Immutable(lambda s: s._expenses)
 
-    has_income = Immutable(
-        lambda s: s._income is not None and len(s._income) > 0
-    )
-    has_expenses = Immutable(
-        lambda s: s._expenses is not None and len(s._expenses) > 0
-    )
+    has_income = Immutable(lambda s: len(s._income) > 0)
+    has_expenses = Immutable(lambda s: len(s._expenses) > 0)
+
+    total_income = Immutable(lambda s: s._compute_income())
+    total_expenses = Immutable(lambda s: s._compute_expenses())
 
     @classmethod
     def decode(
@@ -196,6 +194,22 @@ class Performance(Denominated, Decodable):
         )
 
         return cls.decode(entity, request.response_data)
+
+    def _compute_income(self) -> Decimal:
+        """Return total income"""
+        if not self.has_income:
+            return Decimal(0)
+        income = sum([i.recursive_balance for i in self._income])
+        assert isinstance(income, Decimal)
+        return income
+
+    def _compute_expenses(self) -> Decimal:
+        """Return total expenses"""
+        if not self.has_expenses:
+            return Decimal(0)
+        expenses = sum([e.recursive_balance for e in self._expenses])
+        assert isinstance(expenses, Decimal)
+        return expenses
 
     class RetrieveArguments(Encodable):
         def __init__(
