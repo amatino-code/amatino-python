@@ -23,5 +23,6 @@ SEQUENCE = [
     derived.BalanceTest,
     derived.RecursiveBalanceTest,
     derived.PositionTest,
-    derived.PerformanceTest
+    derived.PerformanceTest,
+    derived.TreeTest
 ]
