@@ -17,3 +17,4 @@ from amatino.recursive_balance import RecursiveBalance
 from amatino.performance import Performance
 from amatino.position import Position
 from amatino.tree_node import TreeNode
+from amatino.tree import Tree

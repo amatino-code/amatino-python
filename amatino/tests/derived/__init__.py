@@ -4,3 +4,4 @@ from amatino.tests.derived.balance import BalanceTest
 from amatino.tests.derived.recursive_balance import RecursiveBalanceTest
 from amatino.tests.derived.performance import PerformanceTest
 from amatino.tests.derived.position import PositionTest
+from amatino.tests.derived.tree import TreeTest
