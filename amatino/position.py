@@ -10,6 +10,7 @@ from typing import Optional
 from typing import Any
 from typing import Dict
 from datetime import datetime
+from decimal import Decimal
 from amatino.denominated import Denominated
 from amatino.denomination import Denomination
 from amatino.decodable import Decodable
@@ -66,9 +67,9 @@ class Position(Denominated, Decodable):
         generated_time: AmatinoTime,
         global_unit_id: Optional[int],
         custom_unit_id: Optional[int],
-        assets: Optional[List[TreeNode]],
-        liabilities: Optional[List[TreeNode]],
-        equities: Optional[List[TreeNode]],
+        assets: List[TreeNode],
+        liabilities: List[TreeNode],
+        equities: List[TreeNode],
         depth: int
     ) -> None:
 
@@ -79,15 +80,12 @@ class Position(Denominated, Decodable):
             assert isinstance(global_unit_id, int)
         if custom_unit_id is not None:
             assert isinstance(custom_unit_id, int)
-        if assets is not None:
-            assert isinstance(assets, list)
-            assert False not in [isinstance(a, TreeNode) for a in assets]
-        if liabilities is not None:
-            assert isinstance(liabilities, list)
-            assert False not in [isinstance(l, TreeNode) for l in liabilities]
-        if equities is not None:
-            assert isinstance(equities, list)
-            assert False not in [isinstance(e, TreeNode) for e in equities]
+        assert isinstance(assets, list)
+        assert False not in [isinstance(a, TreeNode) for a in assets]
+        assert isinstance(liabilities, list)
+        assert False not in [isinstance(l, TreeNode) for l in liabilities]
+        assert isinstance(equities, list)
+        assert False not in [isinstance(e, TreeNode) for e in equities]
 
         self._entity = entity
         self._balance_time = balance_time
@@ -111,15 +109,21 @@ class Position(Denominated, Decodable):
     liabilities = Immutable(lambda s: s._liabilities)
     equities = Immutable(lambda s: s._equities)
 
-    has_assets = Immutable(
-        lambda s: s._assets is not None and len(s._assets) > 0
-    )
-    has_liabilities = Immutable(
-        lambda s: s._liabilities is not None and len(s._liabilities) > 0
-    )
-    has_equities = Immutable(
-        lambda s: s._equities is not None and len(s._equities) > 0
-    )
+    has_assets = Immutable(lambda s: len(s._assets) > 0)
+    has_liabilities = Immutable(lambda s: len(s._liabilities) > 0)
+    has_equities = Immutable(lambda s: len(s._equities) > 0)
+
+    total_assets = Immutable(lambda s: s._compute_total(s._assets))
+    total_liabilities = Immutable(lambda s: s._compute_total(s._liabilities))
+    total_equity = Immutable(lambda s: s._compute_total(s._equities))
+
+    def _compute_total(self, nodes: List[TreeNode]) -> Decimal:
+        """Return the total of all top level recursive balances"""
+        if len(nodes) < 1:
+            return Decimal(0)
+        total = sum([n.recursive_balance for n in nodes])
+        assert isinstance(total, Decimal)
+        return total
 
     @classmethod
     def decode(
@@ -133,20 +137,12 @@ class Position(Denominated, Decodable):
 
         try:
 
-            assets = None
-            if data['assets'] is not None:
-                assets = TreeNode.decode_many(entity, data['assets'])
-
-            liabilities = None
-            if data['liabilities'] is not None:
-                liabilities = TreeNode.decode_many(
-                    entity,
-                    data['liabilities']
-                )
-
-            equities = None
-            if data['equities'] is not None:
-                equities = TreeNode.decode_many(entity, data['equities'])
+            if data['assets'] is None:
+                data['assets'] = list()
+            if data['liabilities'] is None:
+                data['liabilities'] = list()
+            if data['equities'] is None:
+                data['equities'] = list()
 
             position = cls(
                 entity=entity,
@@ -154,9 +150,9 @@ class Position(Denominated, Decodable):
                 generated_time=AmatinoTime.decode(data['generated_time']),
                 global_unit_id=data['global_unit_denomination'],
                 custom_unit_id=data['custom_unit_denomination'],
-                assets=assets,
-                liabilities=liabilities,
-                equities=equities,
+                assets=TreeNode.decode_many(entity, data['assets']),
+                liabilities=TreeNode.decode_many(entity, data['liabilities']),
+                equities=TreeNode.decode_many(entity, data['equities']),
                 depth=data['depth']
             )
 
