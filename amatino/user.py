@@ -68,6 +68,7 @@ class User:
         self._name = name
         self._handle = handle
         self._avatar_url = avatar_url
+        self._session = session
 
         return
 
@@ -76,6 +77,19 @@ class User:
     name = Immutable(lambda s: s._name)
     handle = Immutable(lambda s: s._handle)
     avatar_url = Immutable(lambda s: s._avatar_url)
+
+    def delete(self) -> None:
+        """Return None after deleting this User"""
+        target = UrlTarget('user_id')
+        parameters = UrlParameters(targets=[target])
+        ApiRequest(
+            path=self._PATH,
+            data=None,
+            credentials=self._session,
+            method=HTTPMethod.DELETE,
+            url_parameters=parameters
+        )
+        return
 
     @classmethod
     def retrieve_authenticated_user(cls: Type[T], session: Session) -> T:
@@ -126,6 +140,10 @@ class User:
         users = cls._decode_many(session, request.response_data)
 
         return users
+
+    @classmethod
+    def decode(cls: Type[T], session: Session, data: Any) -> T:
+        return cls._decode_many(session, [data])
 
     @classmethod
     def _decode_many(cls: Type[T], session: Session, data: Any) -> List[T]:
