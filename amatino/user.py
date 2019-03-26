@@ -79,7 +79,7 @@ class User:
 
     def delete(self) -> None:
         """Return None after deleting this User"""
-        target = UrlTarget('user_id')
+        target = UrlTarget.from_integer('user_id', self._id)
         parameters = UrlParameters(targets=[target])
         ApiRequest(
             path=self._PATH,
@@ -136,16 +136,16 @@ class User:
             url_parameters=parameters
         )
 
-        users = cls._decode_many(session, request.response_data)
+        users = cls.decode_many(session, request.response_data)
 
         return users
 
     @classmethod
     def decode(cls: Type[T], session: Session, data: Any) -> T:
-        return cls._decode_many(session, [data])[0]
+        return cls.decode_many(session, [data])[0]
 
     @classmethod
-    def _decode_many(cls: Type[T], session: Session, data: Any) -> List[T]:
+    def decode_many(cls: Type[T], session: Session, data: Any) -> List[T]:
         """Return a list of Users decoded from API response data"""
 
         if not isinstance(data, list):
@@ -196,7 +196,7 @@ class User:
             url_parameters=None
         )
 
-        return cls._decode_many(session, request.response_data)
+        return cls.decode_many(session, request.response_data)
 
     @classmethod
     def create(
