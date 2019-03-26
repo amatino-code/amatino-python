@@ -169,7 +169,7 @@ class Transaction:
             url_parameters=parameters
         )
 
-        transactions = cls._decode_many(
+        transactions = cls.decode_many(
             session,
             entity,
             request.response_data
@@ -185,14 +185,14 @@ class Transaction:
         data: List[dict]
     ) -> T:
 
-        return cls._decode_many(session, entity, data)[0]
+        return cls.decode_many(session, entity, data)[0]
 
     @classmethod
-    def _decode_many(
+    def decode_many(
         cls: Type[T],
         session: Session,
         entity: Entity,
-        data: List[dict]
+        data: Any
     ) -> List[T]:
 
         if not isinstance(data, list):
