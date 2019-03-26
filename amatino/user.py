@@ -143,7 +143,7 @@ class User:
 
     @classmethod
     def decode(cls: Type[T], session: Session, data: Any) -> T:
-        return cls._decode_many(session, [data])
+        return cls._decode_many(session, [data])[0]
 
     @classmethod
     def _decode_many(cls: Type[T], session: Session, data: Any) -> List[T]:
