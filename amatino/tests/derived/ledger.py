@@ -44,4 +44,7 @@ class LedgerTest(TransactionTest):
             self.record_failure('Unexpected number of ledger rows')
             return
 
+        ledger_row_1 = ledger[0]
+        assert isinstance(ledger_row_1, LedgerRow)
+
         self.record_success()
