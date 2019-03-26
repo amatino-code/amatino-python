@@ -1,5 +1,5 @@
 """
-Amatino API
+Amatino API Python Bindings
 Tree Module
 Author: hugh@amatino.io
 """
