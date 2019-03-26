@@ -9,14 +9,13 @@ from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.url_target import UrlTarget
 from amatino.internal.api_request import ApiRequest
 from amatino.internal.http_method import HTTPMethod
+from amatino.internal.data_package import DataPackage
 from amatino.unexpected_response_type import UnexpectedResponseType
-from typing import TypeVar
-from typing import Type
-from typing import Optional
-from typing import List
-from typing import Any
+from amatino.internal.encodable import Encodable
+from typing import TypeVar, Dict, Type, Optional, List, Any
 
 T = TypeVar('T', bound='User')
+K = TypeVar('K', bound='User.CreateArguments')
 
 
 class User:
@@ -168,3 +167,92 @@ class User:
             return user
 
         return [decode(u) for u in data]
+
+    @classmethod
+    def create_many(
+        cls: Type[T],
+        session: Session,
+        arguments: List[K]
+    ) -> List[T]:
+        """Return many newly created Users"""
+        if not isinstance(session, Session):
+            raise TypeError('session must be of type Session')
+
+        if not isinstance(arguments, list):
+            raise TypeError(
+                'arguments must be of type List[User.CreateArguments]'
+            )
+
+        if False in [isinstance(a, User.CreateArguments) for a in arguments]:
+            raise TypeError(
+                'arguments must be of type List[User.CreateArguments]'
+            )
+
+        request = ApiRequest(
+            path=cls._PATH,
+            method=HTTPMethod.POST,
+            credentials=session,
+            data=DataPackage(list_data=arguments),
+            url_parameters=None
+        )
+
+        return cls._decode_many(session, request.response_data)
+
+    @classmethod
+    def create(
+        cls: Type[T],
+        session: Session,
+        secret: str,
+        name: Optional[str] = None,
+        handle: Optional[str] = None
+    ) -> T:
+        """Return a newly created User"""
+
+        arguments = User.CreateArguments(
+            secret=secret,
+            name=name,
+            handle=handle
+        )
+        return cls.create_many(session, [arguments])[0]
+
+    class CreateArguments(Encodable):
+        def __init__(
+            self,
+            secret: str,
+            name: Optional[str] = None,
+            handle: Optional[str] = None
+        ) -> None:
+
+            if not isinstance(secret, str):
+                raise TypeError('secret must be of type str')
+
+            if len(secret) < 12 or len(secret) > 100:
+                raise ValueError('secret must be >= 12, <= 100 characters long')
+
+            if 'password' in secret:
+                raise ValueError('secret cannot contain "password"')
+
+            if name is not None and not isinstance(name, str):
+                raise TypeError('If supplied, name must be str')
+
+            if name is not None and len(name) > 512:
+                raise ValueError('Max name length 512 characters')
+
+            if handle is not None and not isinstance(handle, str):
+                raise TypeError('If supplied, handle must be str')
+
+            if handle is not None and len(handle) > 512:
+                raise ValueError('Max handle lenfth 512 characters')
+
+            self._secret = secret
+            self._name = name
+            self._handle = handle
+
+            return
+
+        def serialise(self) -> Dict[str, Any]:
+            return {
+                'secret': self._secret,
+                'name': self._name,
+                'handle': self._handle
+            }
