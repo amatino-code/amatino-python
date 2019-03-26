@@ -18,3 +18,5 @@ from amatino.performance import Performance
 from amatino.position import Position
 from amatino.tree_node import TreeNode
 from amatino.tree import Tree
+from amatino.state import State
+from amatino.user_list import UserList
