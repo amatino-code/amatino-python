@@ -28,11 +28,12 @@ from typing import Type
 from typing import Dict
 from typing import Any
 from typing import List
+from collections import Sequence
 
 T = TypeVar('T', bound='Ledger')
 
 
-class Ledger:
+class Ledger(Sequence):
     """
     A Ledger is a list of Transactions from the perspective of a particular
     Account. Ledgers are ordered by Transaction time, and include a running
@@ -307,3 +308,6 @@ class Ledger:
 
     def __len__(self):
         return len(self.rows)
+
+    def __getitem__(self, key):
+        return self.rows[key]
