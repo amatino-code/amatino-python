@@ -24,5 +24,6 @@ SEQUENCE = [
     derived.RecursiveBalanceTest,
     derived.PositionTest,
     derived.PerformanceTest,
-    derived.TreeTest
+    derived.TreeTest,
+    derived.UserListTest
 ]
