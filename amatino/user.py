@@ -56,10 +56,10 @@ class User:
         self,
         session: Session,
         id_: int,
-        email: str,
-        name: str,
-        handle: str,
-        avatar_url: str
+        email: Optional[str],
+        name: Optional[str],
+        handle: Optional[str],
+        avatar_url: Optional[str]
     ) -> None:
 
         self._id = id_
