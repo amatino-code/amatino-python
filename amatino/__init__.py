@@ -20,3 +20,4 @@ from amatino.tree_node import TreeNode
 from amatino.tree import Tree
 from amatino.state import State
 from amatino.user_list import UserList
+from amatino.tx_version_list import TransactionVersionList
