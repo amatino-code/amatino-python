@@ -25,5 +25,6 @@ SEQUENCE = [
     derived.PositionTest,
     derived.PerformanceTest,
     derived.TreeTest,
-    derived.UserListTest
+    derived.UserListTest,
+    derived.TxVersionListTest
 ]
