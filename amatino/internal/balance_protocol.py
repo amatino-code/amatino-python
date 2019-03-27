@@ -24,13 +24,14 @@ from amatino.internal.api_request import ApiRequest
 from amatino.internal.http_method import HTTPMethod
 from amatino.internal.data_package import DataPackage
 from amatino.internal.url_parameters import UrlParameters
+from amatino.denominated import Denominated
 
 
 T = TypeVar('T', bound='BalanceProtocol')
 K = TypeVar('K', bound='BalanceProtocol.RetrieveArguments')
 
 
-class BalanceProtocol:
+class BalanceProtocol(Denominated):
     """
     Abstract class defining a protocol for classes representing balances. In
     practice these are Balance and RecrusiveBalance. This class is intended
@@ -87,19 +88,8 @@ class BalanceProtocol:
     account = Immutable(
         lambda s: Account.retrieve(s.entity.session, s.entity, s.account_id)
     )
-    denomination = Immutable(lambda s: s._denomination())
     global_unit_id = Immutable(lambda s: s._global_unit_id)
     custom_unit_id = Immutable(lambda s: s._custom_unit_id)
-
-    def _denomination(self) -> Denomination:
-        """Return the underlying denomination of this Balance"""
-        if self._global_unit_id is None:
-            return CustomUnit.retrieve(
-                self.entity,
-                self.session,
-                self._custom_unit_id
-            )
-        return GlobalUnit.retrieve(self.session, self._global_unit_id)
 
     @classmethod
     def retrieve_many(
