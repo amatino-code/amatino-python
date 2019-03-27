@@ -42,7 +42,6 @@ class PositionTest(AccountTest):
             )
 
             liability_child = Account.create(
-                session=self.session,
                 entity=self.entity,
                 name='Test liability child',
                 am_type=AMType.liability,
@@ -51,7 +50,6 @@ class PositionTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [
@@ -63,7 +61,6 @@ class PositionTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [
@@ -76,7 +73,6 @@ class PositionTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow() + timedelta(days=4),
                 [

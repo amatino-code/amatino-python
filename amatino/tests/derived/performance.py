@@ -37,7 +37,6 @@ class PerformanceTest(AccountTest):
             )
 
             income_child = Account.create(
-                self.session,
                 self.entity,
                 'Test income child',
                 income.am_type,
@@ -51,7 +50,6 @@ class PerformanceTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [
@@ -63,7 +61,6 @@ class PerformanceTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [
@@ -76,7 +73,6 @@ class PerformanceTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow() - timedelta(days=4),
                 [
@@ -88,7 +84,6 @@ class PerformanceTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow() + timedelta(days=4),
                 [

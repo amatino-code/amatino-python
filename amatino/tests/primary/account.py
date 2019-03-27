@@ -39,7 +39,6 @@ class AccountTest(EntityTest):
     def create_account(self, amt=AMType.asset, name='Test account') -> Account:
 
         account = Account.create(
-            self.session,
             self.entity,
             name,
             amt,
@@ -63,7 +62,6 @@ class AccountTest(EntityTest):
 
         try:
             account = Account.retrieve(
-                self.session,
                 self.entity,
                 account.id_
             )

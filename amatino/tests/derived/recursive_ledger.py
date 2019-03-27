@@ -27,7 +27,6 @@ class RecursiveLedgerTest(TransactionTest):
 
         try:
             asset_child = Account.create(
-                self.session,
                 self.entity,
                 'Test Asset Child',
                 self.asset.am_type,
@@ -36,7 +35,6 @@ class RecursiveLedgerTest(TransactionTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [
@@ -47,7 +45,6 @@ class RecursiveLedgerTest(TransactionTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [
@@ -58,7 +55,6 @@ class RecursiveLedgerTest(TransactionTest):
             )
 
             ledger = RecursiveLedger.retrieve(
-                self.session,
                 self.entity,
                 self.asset
             )

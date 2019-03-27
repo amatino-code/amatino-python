@@ -21,7 +21,6 @@ class CustomUnitTest(EntityTest):
         try:
             custom_unit = CustomUnit.create(
                 self.entity,
-                self.session,
                 'Bojangles',
                 'BTX',
                 4
@@ -48,7 +47,6 @@ class CustomUnitTest(EntityTest):
         try:
             retrieved_custom_unit = CustomUnit.retrieve(
                 self.entity,
-                self.session,
                 custom_unit.id_
             )
         except Exception as error:

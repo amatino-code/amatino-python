@@ -30,7 +30,7 @@ class LedgerTest(TransactionTest):
             return
 
         try:
-            ledger = Ledger.retrieve(self.session, self.entity, self.asset)
+            ledger = Ledger.retrieve(self.entity, self.asset)
         except Exception as error:
             self.record_failure(error)
             return

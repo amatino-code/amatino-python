@@ -23,18 +23,14 @@ from amatino.api_error import ApiError
 from amatino.missing_key import MissingKey
 from amatino.internal.am_amount import AmatinoAmount
 from decimal import Decimal
-from typing import TypeVar
-from typing import Optional
-from typing import Type
-from typing import Any
-from typing import List
-from typing import Dict
+from typing import TypeVar, Optional, Type, Any, List, Dict
 from amatino.internal.immutable import Immutable
+from collections import Sequence
 
 T = TypeVar('T', bound='Transaction')
 
 
-class Transaction:
+class Transaction(Sequence):
     """
     A Transaction is an exchange of value between two or more Accounts. For
     example, the raising of an invoice, the incrurring of a liability, or the
@@ -58,20 +54,20 @@ class Transaction:
 
     def __init__(
         self,
-        session: Session,
         entity: Entity,
         transaction_id: int,
         transaction_time: AmatinoTime,
+        version_time: AmatinoTime,
         description: str,
         entries: List[Entry],
         global_unit_id: Optional[int] = None,
         custom_unit_id: Optional[int] = None
     ) -> None:
 
-        self._session = session
         self._entity = entity
         self._id = transaction_id
         self._time = transaction_time
+        self._version_time = version_time
         self._description = description
         self._entries = entries
         self._global_unit_id = global_unit_id
@@ -79,20 +75,29 @@ class Transaction:
 
         return
 
-    session = Immutable(lambda s: s._session)
+    session = Immutable(lambda s: s._entity.session)
     entity = Immutable(lambda s: s._entity)
     id_ = Immutable(lambda s: s._id)
     time = Immutable(lambda s: s._time.raw)
+    version_time = Immutable(lambda s: s._version_time.raw)
     description = Immutable(lambda s: s._description)
     entries = Immutable(lambda s: s._entries)
     global_unit_id = Immutable(lambda s: s._global_unit_id)
     custom_unit_id = Immutable(lambda s: s._custom_unit_id)
     denomination = Immutable(lambda s: s._denomination())
+    magnitude = Immutable(
+        lambda s: sum([e.amount for e in s._entries if e.side == Side.debit])
+    )
+
+    def __len__(self):
+        return len(self.entries)
+
+    def __getitem__(self, key):
+        return self.entries[key]
 
     @classmethod
     def create(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         time: datetime,
         entries: List[Entry],
@@ -113,38 +118,33 @@ class Transaction:
         request = ApiRequest(
             path=Transaction._PATH,
             method=HTTPMethod.POST,
-            credentials=session,
+            credentials=entity.session,
             data=data,
             url_parameters=parameters
         )
 
-        transaction = cls._decode(session, entity, request.response_data)
+        transaction = cls._decode(entity, request.response_data)
 
         return transaction
 
     @classmethod
     def retrieve(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         id_: int,
         denomination: Denomination
     ) -> T:
         """Return a retrieved Transaction"""
-        return cls.retrieve_many(session, entity, [id_], denomination)[0]
+        return cls.retrieve_many(entity, [id_], denomination)[0]
 
     @classmethod
     def retrieve_many(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         ids: List[int],
         denomination: Denomination
     ) -> List[T]:
         """Return many retrieved Transactions"""
-
-        if not isinstance(session, Session):
-            raise TypeError('session must be of type `Session`')
 
         if not isinstance(entity, Entity):
             raise TypeError('entity must be of type `Entity`')
@@ -164,13 +164,12 @@ class Transaction:
         request = ApiRequest(
             path=Transaction._PATH,
             method=HTTPMethod.GET,
-            credentials=session,
+            credentials=entity.session,
             data=data,
             url_parameters=parameters
         )
 
         transactions = cls.decode_many(
-            session,
             entity,
             request.response_data
         )
@@ -180,17 +179,15 @@ class Transaction:
     @classmethod
     def _decode(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         data: List[dict]
     ) -> T:
 
-        return cls.decode_many(session, entity, data)[0]
+        return cls.decode_many(entity, data)[0]
 
     @classmethod
     def decode_many(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         data: Any
     ) -> List[T]:
@@ -206,12 +203,12 @@ class Transaction:
                 raise ApiError('Unexpected non-dict data returned')
             try:
                 transaction = cls(
-                    session=session,
                     entity=entity,
                     transaction_id=data['transaction_id'],
                     transaction_time=AmatinoTime.decode(
                         data['transaction_time']
                     ),
+                    version_time=AmatinoTime.decode(data['version_time']),
                     description=data['description'],
                     entries=cls._decode_entries(data['entries']),
                     global_unit_id=data['global_unit_denomination'],
@@ -249,13 +246,12 @@ class Transaction:
         request = ApiRequest(
             path=Transaction._PATH,
             method=HTTPMethod.PUT,
-            credentials=self.session,
+            credentials=self.entity.session,
             data=data,
             url_parameters=parameters
         )
 
         transaction = Transaction._decode(
-            self.session,
             self.entity,
             request.response_data
         )
@@ -277,7 +273,7 @@ class Transaction:
         ApiRequest(
             path=self._PATH,
             method=HTTPMethod.DELETE,
-            credentials=self.session,
+            credentials=self.entity.session,
             data=None,
             url_parameters=parameters
         )
@@ -297,10 +293,9 @@ class Transaction:
     def _denomination(self) -> Denomination:
         """Return the Denomination of this Transaction"""
         if self.global_unit_id is not None:
-            return GlobalUnit.retrieve(self.session, self.global_unit_id)
+            return GlobalUnit.retrieve(self.entity.session, self.global_unit_id)
         return CustomUnit.retrieve(
             self.entity,
-            self.session,
             self.custom_unit_id
         )
 

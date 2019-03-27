@@ -3,7 +3,6 @@ Amatino API Python Bindings
 Custom Unit Module
 Author: hugh@amatino.io
 """
-from amatino.session import Session
 from amatino.entity import Entity
 from amatino.global_unit import GlobalUnit
 from amatino.denomination import Denomination
@@ -52,7 +51,6 @@ class CustomUnit(Denomination):
 
     def __init__(
         self,
-        session: Session,
         entity: Entity,
         id_: int,
         code: str,
@@ -62,21 +60,19 @@ class CustomUnit(Denomination):
         exponent: int
     ) -> None:
 
-        self._session = session
         self._entity = entity
 
         super().__init__(code, id_, name, priority, description, exponent)
 
         return
 
-    session = Immutable(lambda s: s._session)
+    session = Immutable(lambda s: s._entity._session)
     entity = Immutable(lambda s: s._entity)
 
     @classmethod
     def create(
         cls: Type[T],
         entity: Entity,
-        session: Session,
         name: str,
         code: str,
         exponent: int,
@@ -96,19 +92,18 @@ class CustomUnit(Denomination):
 
         request = ApiRequest(
             path=CustomUnit._PATH,
-            credentials=session,
+            credentials=entity.session,
             method=HTTPMethod.POST,
             data=DataPackage.from_object(arguments),
             url_parameters=parameters
         )
 
-        return CustomUnit._decode(session, entity, request.response_data)
+        return CustomUnit._decode(entity, request.response_data)
 
     @classmethod
     def retrieve(
         cls: Type[T],
         entity: Entity,
-        session: Session,
         custom_unit_id: int
     ) -> T:
 
@@ -120,24 +115,20 @@ class CustomUnit(Denomination):
             method=HTTPMethod.GET,
             data=None,
             url_parameters=parameters,
-            credentials=session
+            credentials=entity.session
         )
 
-        return cls._decode(session, entity, request.response_data)
+        return cls._decode(entity, request.response_data)
 
     @classmethod
     def _retrieve(
         cls: Type[T],
         entity: Entity,
-        session: Session,
         custom_unit_ids: List[int]
     ) -> T:
 
         if not isinstance(entity, Entity):
             raise TypeError('entity must be of type `Entity`')
-
-        if not isinstance(session, Session):
-            raise TypeError('session must be of type `Session')
 
         key = CustomUnit._URL_KEY
         targets = [UrlTarget(key, str(i)) for i in custom_unit_ids]
@@ -150,13 +141,12 @@ class CustomUnit(Denomination):
         request = ApiRequest(
             path=CustomUnit._PATH,
             method=HTTPMethod.GET,
-            credentials=session,
+            credentials=entity.session,
             data=None,
             url_parameters=url_parameters
         )
 
         unit = cls._decode(
-            session,
             entity,
             request.response_data
         )
@@ -166,21 +156,18 @@ class CustomUnit(Denomination):
     @classmethod
     def _decode(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         data: Any
     ) -> T:
-        return cls._decodeMany(session, entity, data)[0]
+        return cls._decodeMany(entity, data)[0]
 
     @classmethod
     def _decodeMany(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         data: Any
     ) -> List[T]:
 
-        assert isinstance(session, Session)
         assert isinstance(entity, Entity)
 
         if not isinstance(data, list):
@@ -194,7 +181,6 @@ class CustomUnit(Denomination):
                 raise ApiError('Unexpected non-dict data returned')
             try:
                 unit = cls(
-                    session=session,
                     entity=entity,
                     id_=data['custom_unit_id'],
                     code=data['code'],
@@ -258,11 +244,10 @@ class CustomUnit(Denomination):
             method=HTTPMethod.PUT,
             data=DataPackage.from_object(arguments),
             url_parameters=parameters,
-            credentials=self.session
+            credentials=self.entity.session
         )
 
         return CustomUnit._decode(
-            self.session,
             self.entity,
             request.response_data
         )
@@ -424,7 +409,7 @@ class CustomUnit(Denomination):
             priority=self.priority,
             exponent=self.exponent,
             description=self.description,
-            session_id=str(self.session.id_),
+            session_id=str(self.entity.session.id_),
             entity_id=self.entity.id_
         )
         return representation

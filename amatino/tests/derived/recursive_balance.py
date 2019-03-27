@@ -28,7 +28,6 @@ class RecursiveBalanceTest(TransactionTest):
         try:
 
             asset_child = Account.create(
-                self.session,
                 self.entity,
                 'Test Asset Child',
                 self.asset.am_type,
@@ -40,7 +39,6 @@ class RecursiveBalanceTest(TransactionTest):
             self.create_transaction(amount=Decimal(18))
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [

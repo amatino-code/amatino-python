@@ -29,11 +29,12 @@ from typing import Dict
 from typing import Any
 from typing import List
 from collections import Sequence
+from amatino.denominated import Denominated
 
 T = TypeVar('T', bound='Ledger')
 
 
-class Ledger(Sequence):
+class Ledger(Sequence, Denominated):
     """
     A Ledger is a list of Transactions from the perspective of a particular
     Account. Ledgers are ordered by Transaction time, and include a running
@@ -53,7 +54,6 @@ class Ledger(Sequence):
 
     def __init__(
         self,
-        session: Session,
         entity: Entity,
         account_id: int,
         start_time: AmatinoTime,
@@ -68,7 +68,6 @@ class Ledger(Sequence):
         ledger_rows: List[LedgerRow]
     ) -> None:
 
-        self._session = session
         self._entity = entity
         self._account_id = account_id
         self._start_time = start_time
@@ -84,13 +83,12 @@ class Ledger(Sequence):
 
         return
 
-    session = Immutable(lambda s: s._session)
+    session = Immutable(lambda s: s._entity.session)
     entity = Immutable(lambda s: s._entity)
     account_id = Immutable(lambda s: s._account_id)
     account = Immutable(
         lambda s: Account.retrieve(s.session, s.entity, s.account_id)
     )
-    denomination = Immutable(lambda s: s._denomination())
     start_time = Immutable(lambda s: s._start_time.raw)
     end_time = Immutable(lambda s: s._end_time.raw)
     recursive = Immutable(lambda s: s._recursive)
@@ -102,20 +100,9 @@ class Ledger(Sequence):
     order = Immutable(lambda s: s._order)
     rows = Immutable(lambda s: s._rows)
 
-    def _denomination(self) -> Denomination:
-        """Return the underlying denomination of this Ledger"""
-        if self._global_unit_id is None:
-            return CustomUnit.retrieve(
-                self.entity,
-                self.session,
-                self._custom_unit_id
-            )
-        return GlobalUnit.retrieve(self.session, self._global_unit_id)
-
     @classmethod
     def retrieve(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         account: Account,
         order: LedgerOrder = LedgerOrder.YOUNGEST_FIRST,
@@ -128,9 +115,6 @@ class Ledger(Sequence):
         Retrieve a Ledger for the supplied account. Optionally specify order,
         page, denomination, start time, and end time.
         """
-        if not isinstance(session, Session):
-            raise TypeError('session must be of type `Session`')
-
         if not isinstance(entity, Entity):
             raise TypeError('entity must be of type `Entity`')
 
@@ -149,17 +133,16 @@ class Ledger(Sequence):
         request = ApiRequest(
             path=cls._PATH,
             method=HTTPMethod.GET,
-            credentials=session,
+            credentials=entity.session,
             data=data,
             url_parameters=parameters
         )
 
-        return cls._decode(session, entity, request.response_data)
+        return cls._decode(entity, request.response_data)
 
     @classmethod
     def _decode(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         data: Any
     ) -> T:
@@ -169,8 +152,7 @@ class Ledger(Sequence):
 
         try:
             ledger = cls(
-                session,
-                entity,
+                entity=entity,
                 account_id=data['account_id'],
                 start_time=AmatinoTime.decode(data['start_time']),
                 end_time=AmatinoTime.decode(data['end_time']),

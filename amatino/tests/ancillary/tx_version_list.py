@@ -34,7 +34,6 @@ class TxVersionListTest(AccountTest):
             )
 
             income_child = Account.create(
-                self.session,
                 self.entity,
                 'Test income child',
                 income.am_type,
@@ -48,7 +47,6 @@ class TxVersionListTest(AccountTest):
             )
 
             transaction = Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [

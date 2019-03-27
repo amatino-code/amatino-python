@@ -37,7 +37,6 @@ class TreeTest(AccountTest):
             )
 
             income_child = Account.create(
-                self.session,
                 self.entity,
                 'Test income child',
                 income.am_type,
@@ -56,7 +55,6 @@ class TreeTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [
@@ -68,7 +66,6 @@ class TreeTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [
@@ -81,7 +78,6 @@ class TreeTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow(),
                 [
@@ -93,7 +89,6 @@ class TreeTest(AccountTest):
             )
 
             Transaction.create(
-                self.session,
                 self.entity,
                 datetime.utcnow() + timedelta(days=4),
                 [

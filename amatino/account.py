@@ -43,7 +43,6 @@ class Account(Denominated):
 
     def __init__(
         self,
-        session: Session,
         entity: Entity,
         account_id: int,
         name: str,
@@ -56,7 +55,6 @@ class Account(Denominated):
         color: Color
     ) -> None:
 
-        self._session = session
         self._entity = entity
         self._id = account_id
         self._name = name
@@ -72,7 +70,7 @@ class Account(Denominated):
 
         return
 
-    session = Immutable(lambda s: s._session)
+    session = Immutable(lambda s: s._entity.session)
     entity = Immutable(lambda s: s._entity)
     id_ = Immutable(lambda s: s._id)
     name = Immutable(lambda s: s._name)
@@ -88,7 +86,6 @@ class Account(Denominated):
     @classmethod
     def create(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         name: str,
         am_type: AMType,
@@ -115,19 +112,18 @@ class Account(Denominated):
         request = ApiRequest(
             path=Account._PATH,
             method=HTTPMethod.POST,
-            credentials=session,
+            credentials=entity.session,
             data=data,
             url_parameters=parameters
         )
 
-        account = cls._decode(session, entity, request.response_data)
+        account = cls._decode(entity, request.response_data)
 
         return account
 
     @classmethod
     def retrieve(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         account_id: int
     ) -> T:
@@ -140,12 +136,12 @@ class Account(Denominated):
         request = ApiRequest(
             path=Account._PATH,
             method=HTTPMethod.GET,
-            credentials=session,
+            credentials=entity.session,
             data=None,
             url_parameters=url_parameters
         )
 
-        account = cls._decode(session, entity, request.response_data)
+        account = cls._decode(entity, request.response_data)
 
         return account
 
@@ -180,13 +176,12 @@ class Account(Denominated):
         request = ApiRequest(
             path=Account._PATH,
             method=HTTPMethod.PUT,
-            credentials=self.session,
+            credentials=self.entity.session,
             data=data,
             url_parameters=parameters
         )
 
         account = Account._decode(
-            self.session,
             self.entity,
             request.response_data
         )
@@ -198,25 +193,6 @@ class Account(Denominated):
 
     def delete(self):
         raise NotImplementedError
-
-    def _denomination(self) -> Denomination:
-        """Return the Denomination of this account"""
-        if self._cached_denomination is not None:
-            return self._cached_denomination
-        if self._global_unit_id is not None:
-            denomination = GlobalUnit.retrieve(
-                self.session,
-                self._global_unit_id
-            )
-        else:
-            denomination = CustomUnit.retrieve(
-                self.entity,
-                self.session,
-                self._custom_unit_id
-            )
-        assert isinstance(denomination, Denomination)
-        self._cached_denomination = denomination
-        return denomination
 
     class CreateArguments(Encodable):
         def __init__(
@@ -280,17 +256,15 @@ class Account(Denominated):
     @classmethod
     def _decode(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         data: List[dict]
     ) -> T:
 
-        return cls._decode_many(session, entity, data)[0]
+        return cls._decode_many(entity, data)[0]
 
     @classmethod
     def _decode_many(
         cls: Type[T],
-        session: Session,
         entity: Entity,
         data: List[dict]
     ) -> List[T]:
@@ -306,7 +280,6 @@ class Account(Denominated):
                 raise ApiError('Unexpected non-dict data returned')
             try:
                 account = cls(
-                    session=session,
                     entity=entity,
                     account_id=data['account_id'],
                     name=data['name'],
@@ -332,7 +305,7 @@ class Account(Denominated):
         if self.parent_id is None:
             return None
         assert isinstance(self.parent_id, int)
-        return Account.retrieve(self.session, self.entity, self.parent_id)
+        return Account.retrieve(self.entity, self.parent_id)
 
     class UpdateArguments(Encodable):
         def __init__(

@@ -38,7 +38,6 @@ class TransactionTest(AccountTest):
             amount = Decimal(10)
 
         transaction = Transaction.create(
-            self.session,
             self.entity,
             datetime.utcnow(),
             [
@@ -53,8 +52,10 @@ class TransactionTest(AccountTest):
 
     def execute(self) -> None:
 
+        amount = Decimal(10)
+
         try:
-            transaction = self.create_transaction()
+            transaction = self.create_transaction(amount=amount)
         except Exception as error:
             self.record_failure(error)
             return
@@ -63,11 +64,19 @@ class TransactionTest(AccountTest):
 
         try:
             transaction = Transaction.retrieve(
-                self.session,
                 self.entity,
                 transaction.id_,
                 self.asset.denomination
             )
+            assert isinstance(transaction, Transaction)
+            assert isinstance(transaction.time, datetime)
+            assert isinstance(transaction.version_time, datetime)
+            assert isinstance(transaction.entries, list)
+            assert transaction.magnitude == Decimal(10)
+            assert len(transaction) > 1
+            for entry in transaction:
+                assert isinstance(entry, Entry)
+
         except Exception as error:
             self.record_failure(error)
             return
@@ -92,7 +101,6 @@ class TransactionTest(AccountTest):
 
         try:
             Transaction.retrieve(
-                self.session,
                 self.entity,
                 transaction.id_,
                 self.asset.denomination
