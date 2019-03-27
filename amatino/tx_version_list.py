@@ -120,7 +120,6 @@ class TransactionVersionList(Sequence):
                 entity=entity,
                 transaction_id=tx_list_data['transaction_id'],
                 versions=Transaction.decode_many(
-                    entity.session,
                     entity,
                     tx_list_data['versions']
                 )
