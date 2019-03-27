@@ -4,7 +4,6 @@ Transaction Module
 Author: hugh@amatino.io
 """
 from datetime import datetime
-from amatino.session import Session
 from amatino.entity import Entity
 from amatino.global_unit import GlobalUnit
 from amatino.custom_unit import CustomUnit
