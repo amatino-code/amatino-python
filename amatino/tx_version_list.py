@@ -25,7 +25,7 @@ class TransactionVersionList(Sequence):
     information describing an Entity. To view the history of a Transaction, you
     can retrieve a Transaction Version List.
     """
-    _PATH = '/transactions/versions/list'
+    _PATH = '/transactions/version/list'
 
     def __init__(
         self,
@@ -88,7 +88,7 @@ class TransactionVersionList(Sequence):
         if not isinstance(entity, Entity):
             raise TypeError('entity must be of type Entity')
 
-        targets = [UrlTarget('transaction_id', transaction.id_)]
+        targets = [UrlTarget.from_integer('transaction_id', transaction.id_)]
         parameters = UrlParameters(entity_id=entity.id_, targets=targets)
         request = ApiRequest(
             path=cls._PATH,
@@ -117,7 +117,7 @@ class TransactionVersionList(Sequence):
                 tx_list_data['versions'] = list()
 
             tx_list = cls(
-                entity=Entity,
+                entity=entity,
                 transaction_id=tx_list_data['transaction_id'],
                 versions=Transaction.decode_many(
                     entity.session,

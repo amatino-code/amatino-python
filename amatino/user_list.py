@@ -150,8 +150,8 @@ class UserList(Sequence):
                 number_of_pages=data['number_of_pages'],
                 generated_time=AmatinoTime.decode(data['generated_time']),
                 state=State(data['state']),
-                users=[User.decode(u) for u in data['users']],
-                session=session,
+                users=User.decode_many(session, data['users']),
+                session=session
             )
         except KeyError as error:
             raise MissingKey(error.args[0])

@@ -232,7 +232,7 @@ class Transaction:
         entries: Optional[List[Entry]] = None,
         denomination: Optional[Denomination] = None,
         description: Optional[str] = None
-    ) -> 'Transaction':
+    ) -> T:
         """Replace existing transaction data with supplied data."""
 
         arguments = Transaction.UpdateArguments(
@@ -424,7 +424,7 @@ class Transaction:
             if time:
                 if not isinstance(time, datetime):
                     raise TypeError('time must be of type `datetime`')
-                self._ = AmatinoTime(time)
+                self._time = AmatinoTime(time)
             else:
                 self._time = AmatinoTime(transaction.time)
 
