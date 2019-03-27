@@ -9,6 +9,7 @@ import amatino.tests.primary as primary
 import amatino.tests.ancillary as ancillary
 import amatino.tests.derived as derived
 from amatino.tests.ancillary.custom_unit import CustomUnitTest
+from amatino.tests.ancillary.tx_version_list import TxVersionListTest
 
 SEQUENCE = [
     ancillary.SessionTest,
@@ -25,6 +26,6 @@ SEQUENCE = [
     derived.PositionTest,
     derived.PerformanceTest,
     derived.TreeTest,
-    derived.UserListTest,
-    derived.TxVersionListTest
+    ancillary.UserListTest,
+    TxVersionListTest
 ]
