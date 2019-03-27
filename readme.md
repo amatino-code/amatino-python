@@ -52,7 +52,6 @@ Entities are structured as a hierarchical tree of [Accounts](https://github.com/
 from amatino import Account
 
 revenue = Account.create(
-  session=session,
   entity=mega_corporation,  # Created above
   description='Revenue from world domination',
   am_type=AMType.revenue,  # An AMType enumeration option
@@ -68,7 +67,6 @@ from datetime import datetime
 from decimal import Decimal
 
 revenue_recognition = Transaction.create(
-  session=session,
   entity=mega_corporation,
   time=datetime.utcnow(),
   entries=[
