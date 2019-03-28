@@ -242,7 +242,7 @@ class User:
                 raise TypeError('If supplied, handle must be str')
 
             if handle is not None and len(handle) > 512:
-                raise ValueError('Max handle lenfth 512 characters')
+                raise ValueError('Max handle length 512 characters')
 
             self._secret = secret
             self._name = name
