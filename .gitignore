@@ -14,3 +14,4 @@ export_test_dev.sh
 .idea/*
 export_test.sh
 .vscode/
+deploy.sh

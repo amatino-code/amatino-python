@@ -13,10 +13,14 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
+with open(path.join(here, 'VERSION'), encoding='utf-8') as version_file:
+    VERSION = version_file.read()
+
 setup(
     name='amatino',
-    version='0.0.14',
-    description='Bindings for the Amatino API, an accounting & financial data engine',
+    version=VERSION,
+    description='Bindings for the Amatino API, an accounting & financial data e\
+ngine',
     long_description=LONG_DESCRIPTION,
     url='https://amatino.io',
     author='Amatino',
