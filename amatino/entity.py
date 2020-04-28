@@ -44,7 +44,6 @@ class Entity:
         description: str,
         region_id: int,
         owner_id: int,
-        active: bool,
         permissions_graph: PermissionsGraph
     ) -> None:
 
@@ -54,7 +53,6 @@ class Entity:
         self._description = description
         self._region_id = region_id
         self._owner_id = owner_id
-        self._active = active
         self._permissions_graph = permissions_graph
 
         return
@@ -65,7 +63,6 @@ class Entity:
     description = Immutable(lambda s: s._description)
     region_id = Immutable(lambda s: s._region_id)
     owner_id = Immutable(lambda s: s._owner_id)
-    active = Immutable(lambda s: s._active)
     permissions_graph = Immutable(lambda s: s._permissions_graph)
 
     @classmethod
@@ -121,15 +118,16 @@ class Entity:
                 entity_id=raw_entity['entity_id'],
                 name=raw_entity['name'],
                 description=raw_entity['description'],
-                region_id=raw_entity['storage_region'],
+                region_id=raw_entity['region_id'],
                 owner_id=raw_entity['owner'],
-                active=raw_entity['active'],
                 permissions_graph=PermissionsGraph(
                     raw_entity['permissions_graph']
                 )
             )
-        except KeyError:
-            raise AmatinoError('Unexpected response format, missing a key')
+        except KeyError as error:
+            raise AmatinoError(
+                'Unexpected response format, missing key ' + error.args[0]
+            )
 
         return entity
 
