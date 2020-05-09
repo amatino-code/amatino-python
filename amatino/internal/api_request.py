@@ -6,6 +6,7 @@ Author: hugh@amatino.io
 This module is intended to be private, used indirectly
 by public classes, and should not be used directly.
 """
+import sys
 from json import loads
 from urllib.request import Request
 from urllib.request import urlopen
@@ -53,10 +54,10 @@ class ApiRequest:
         if url_parameters is not None:
             assert isinstance(url_parameters, UrlParameters)
 
-        if debug is False:
-            url = self._ENDPOINT
-        else:
+        if debug is True or '--debug' in sys.argv[1:]:
             url = self._DEBUG_ENDPOINT
+        else:
+            url = self._ENDPOINT
 
         url += path
 

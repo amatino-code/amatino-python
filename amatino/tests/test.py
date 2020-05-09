@@ -124,7 +124,7 @@ class Test:
 
         return
 
-    def report(self) -> str:
+    def report(self, index: Optional[int] = None) -> str:
         """
         Return a string describing the outcome of this test.
         """
@@ -138,5 +138,12 @@ class Test:
 
         if self._note is not None:
             report += '\n       ' + str(self._note)
+
+        if index is not None:
+            number = str(index)
+            while len(number) < 2:
+                number = ' ' + number
+
+            report = '[' + number + '] ' + report
 
         return report
