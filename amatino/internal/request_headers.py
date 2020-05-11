@@ -34,17 +34,12 @@ class RequestHeaders:
         if credentials is None:
             return
 
-        json_data = None
-        if request_data is not None:
-            json_data = request_data.as_object()
-
         signature = Signature(
             api_key=credentials.api_key,
-            path=path,
-            json_data=json_data
+            path=path
         )
 
-        self._headers['X-Signature'] = signature.string()
+        self._headers['X-Signature'] = signature.string
         self._headers['X-Session-ID'] = credentials.session_id
 
         return
