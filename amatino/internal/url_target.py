@@ -18,8 +18,7 @@ class UrlTarget:
         if not isinstance(key, str):
             raise TypeError('Key must be of type `str`')
 
-        if not isinstance(value, str):
-            raise TypeError('value must be of type `str`')
+        value = str(value)
 
         self.key = key
         self.value = value

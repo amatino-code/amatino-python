@@ -13,18 +13,17 @@ from amatino.internal.http_method import HTTPMethod
 from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.constrained_string import ConstrainedString
 from amatino.internal.encodable import Encodable
-from amatino.amatino_error import AmatinoError
-from typing import TypeVar
-from typing import Optional
-from typing import Type
-from typing import Dict
-from typing import Any
+from amatino.state import State
+from typing import TypeVar, Optional, Type, Dict, Any, List
 from amatino.internal.immutable import Immutable
+from amatino.internal.session_decodable import SessionDecodable
+from amatino.internal.disposition import Disposition
+from amatino.internal.url_target import UrlTarget
 
 T = TypeVar('T', bound='Entity')
 
 
-class Entity:
+class Entity(SessionDecodable):
     """
     An Amatino entity is a economic unit to be described by accounting
     information. Entities are described by accounts, transactions, and entries.
@@ -33,8 +32,11 @@ class Entity:
     of companies, a project, or even a person.
     """
     PATH = '/entities'
+    LIST_PATH = '/entities/list'
     MAX_NAME_LENGTH = 1024
     MAX_DESCRIPTION_LENGTH = 4096
+    MAX_NAME_SEARCH_LENGTH = 64
+    MIN_NAME_SEARCH_LENGTH = 3
 
     def __init__(
         self,
@@ -44,7 +46,8 @@ class Entity:
         description: str,
         region_id: int,
         owner_id: int,
-        permissions_graph: PermissionsGraph
+        permissions_graph: PermissionsGraph,
+        disposition: Disposition
     ) -> None:
 
         self._session = session
@@ -54,6 +57,7 @@ class Entity:
         self._region_id = region_id
         self._owner_id = owner_id
         self._permissions_graph = permissions_graph
+        self._disposition = disposition
 
         return
 
@@ -64,6 +68,7 @@ class Entity:
     region_id = Immutable(lambda s: s._region_id)
     owner_id = Immutable(lambda s: s._owner_id)
     permissions_graph = Immutable(lambda s: s._permissions_graph)
+    disposition = Immutable(lambda s: s._disposition)
 
     @classmethod
     def create(
@@ -91,52 +96,38 @@ class Entity:
             False
         )
 
-        created_entity = cls._decode(request.response_data, session)
+        created_entity = cls.decode(request.response_data, session)
 
         return created_entity
 
     @classmethod
-    def _decode(cls: Type[T], data: list, session: Session) -> T:
+    def decode(cls: Type[T], data: Any, session: Session) -> T:
         """
         Return an Entity instance decoded from API response data
         """
+        if isinstance(data, list):
+            data = data[0]
+
         assert isinstance(session, Session)
 
-        if not isinstance(data, list):
-            raise AmatinoError('Unexpected response format: ' + str(type(data)))
-
-        if len(data) < 1:
-            raise AmatinoError('Response list unexpectedly empty')
-
-        raw_entity = data[0]
-
-        if not isinstance(raw_entity, dict):
-            raise AmatinoError('Unexpected response format')
-        try:
-            entity = cls(
-                session=session,
-                entity_id=raw_entity['entity_id'],
-                name=raw_entity['name'],
-                description=raw_entity['description'],
-                region_id=raw_entity['region_id'],
-                owner_id=raw_entity['owner'],
-                permissions_graph=PermissionsGraph(
-                    raw_entity['permissions_graph']
-                )
-            )
-        except KeyError as error:
-            raise AmatinoError(
-                'Unexpected response format, missing key ' + error.args[0]
-            )
-
-        return entity
+        return cls(
+            session=session,
+            entity_id=data['entity_id'],
+            name=data['name'],
+            description=data['description'],
+            region_id=data['region_id'],
+            owner_id=data['owner'],
+            permissions_graph=PermissionsGraph(data['permissions_graph']),
+            disposition=Disposition.decode(data['disposition'])
+        )
 
     @classmethod
     def retrieve(
         cls: Type[T],
         session: Session,
         entity_id: str
-    ) -> T:
+    ) -> Optional[T]:
+
         if not isinstance(session, Session):
             raise TypeError('session must be of type `Session`')
 
@@ -154,9 +145,70 @@ class Entity:
             debug=False
         )
 
-        entity = cls._decode(request.response_data, session)
+        return cls.optionally_decode(request.response_data, session)
 
-        return entity
+    @classmethod
+    def retrieve_list(
+        cls: Type[T],
+        session: Session,
+        state: State = State.ALL,
+        offset: int = 0,
+        limit: int = 10,
+        name_fragment: Optional[str] = None
+    ) -> List[T]:
+
+        if not isinstance(session, Session):
+            raise TypeError('session must be of type `amatino.Session`')
+
+        if not isinstance(offset, int):
+            raise TypeError('offset must be of type `int`')
+
+        if not isinstance(limit, int):
+            raise TypeError('limit must be of type `int`')
+
+        if not isinstance(state, State):
+            raise TypeError('state must be of type `amatino.State`')
+
+        if name_fragment is not None:
+            if not isinstance(name_fragment, str):
+                raise TypeError('name_fragment must be of type `str`')
+            if len(name_fragment) < cls.MIN_NAME_SEARCH_LENGTH:
+                raise ValueError(
+                    'name_fragment minimum length is {c} char'.format(
+                        c=str(cls.MIN_NAME_SEARCH_LENGTH)
+                    )
+                )
+            if len(name_fragment) > cls.MAX_NAME_SEARCH_LENGTH:
+                raise ValueError(
+                    'name_fragment maximum length is {c} char'.format(
+                        c=str(cls.MAX_NAME_SEARCH_LENGTH)
+                    )
+                )
+
+        url_targets = [
+            UrlTarget('limit', limit),
+            UrlTarget('offset', offset),
+            UrlTarget('state', state.value)
+        ]
+
+        if name_fragment is not None:
+            url_targets.append(UrlTarget('name', name_fragment))
+
+        url_parameters = UrlParameters(targets=url_targets)
+
+        request = ApiRequest(
+            path=Entity.LIST_PATH,
+            method=HTTPMethod.GET,
+            credentials=session,
+            data=None,
+            url_parameters=url_parameters
+        )
+
+        return cls.optionally_decode_many(
+            data=request.response_data,
+            session=session,
+            default_to_empty_list=True
+        )
 
     def update(
         self,
@@ -192,7 +244,7 @@ class Entity:
             url_parameters=None
         )
 
-        updated_entity = Entity._decode(request.response_data, self.session)
+        updated_entity = Entity.decode(request.response_data, self.session)
 
         return updated_entity
 

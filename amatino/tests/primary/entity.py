@@ -72,5 +72,12 @@ class EntityTest(SessionTest):
             self.record_failure('Entity name not updated: ' + str(entity.name))
             return
 
+        listed_entities = Entity.retrieve_list(
+            session=self.session
+        )
+
+        assert isinstance(listed_entities, list)
+        assert len(listed_entities) > 0
+
         self.record_success()
         return
