@@ -33,7 +33,6 @@ class GlobalUnit(Denomination):
 
     def __init__(
         self,
-        session: Session,
         code: str,
         id_: int,
         name: str,
@@ -42,13 +41,9 @@ class GlobalUnit(Denomination):
         exponent: int
     ) -> None:
 
-        assert isinstance(session, Session)
-        self._session = session
         super().__init__(code, id_, name, priority, description, exponent)
 
         return
-
-    session = Immutable(lambda s: s._session)
 
     @classmethod
     def retrieve(cls: Type[T], session: Session, id_: int) -> T:
@@ -84,12 +79,12 @@ class GlobalUnit(Denomination):
             method=HTTPMethod.GET
         )
 
-        units = GlobalUnit._decode_many(session, request.response_data)
+        units = GlobalUnit._decode_many(request.response_data)
 
         return units
 
     @classmethod
-    def _decode_many(cls: Type[T], session: Session, data: Any) -> List[T]:
+    def _decode_many(cls: Type[T], data: Any) -> List[T]:
         """Return a list of Global Units decoded from raw API response data"""
 
         if not isinstance(data, list):
@@ -101,7 +96,6 @@ class GlobalUnit(Denomination):
 
             try:
                 unit = cls(
-                    session=session,
                     code=unit_data['code'],
                     id_=unit_data['global_unit_id'],
                     name=unit_data['name'],
@@ -119,3 +113,24 @@ class GlobalUnit(Denomination):
         units = [decode(u) for u in data]
 
         return units
+
+    def __eq__(self, other):
+        if isinstance(other, GlobalUnit) and other.id_ == self.id_:
+            return True
+        return False
+
+
+class GlobalUnitConstants:
+
+    EUR = GlobalUnit('EUR', 2, 'Euro', 1, '', 2)
+    USD = GlobalUnit('USD', 5, 'US Dollar', 1, '', 2)
+    AUD = GlobalUnit('AUD', 11, 'Australian Dollar', 1, '', 2)
+    CAD = GlobalUnit('CAD', 35, 'Canadian Dollar', 1, '', 2)
+    CNY = GlobalUnit('CNY', 39, 'Yuan Renminbi', 1, '', 4)
+    NZD = GlobalUnit('NZD', 44, 'New Zealand Dollar', 1, '', 2)
+    GBP = GlobalUnit('GBP', 66, 'Pound Sterling', 1, '', 2)
+    JPY = GlobalUnit('JPY', 80, 'Yen', 1, '', 2)
+    CHF = GlobalUnit('CHF', 94, 'Swiss Franc', 1, '', 3)
+    SEK = GlobalUnit('SEK', 143, 'Swedish Krona', 1, '', 2)
+
+    PRIORITY_1_UNITS = (EUR, USD, AUD, CAD, CNY, NZD, GBP, JPY, CHF, SEK)

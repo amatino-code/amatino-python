@@ -42,7 +42,7 @@ class ApiRequest:
         debug: bool = False
     ) -> None:
 
-        self.response_data = None
+        self._response_data = None
 
         if credentials is not None:
             assert isinstance(credentials, Credentials)

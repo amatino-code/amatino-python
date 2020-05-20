@@ -3,9 +3,8 @@ Amatino API Python Bindings
 User Test Module
 Author: hugh@amatino.io
 """
-from amatino import User
+from amatino import User, ResourceNotFound
 from amatino.tests.ancillary.session import SessionTest
-from urllib.error import HTTPError
 
 
 class UserTest(SessionTest):
@@ -35,9 +34,8 @@ class UserTest(SessionTest):
             was_deleted = False
             try:
                 User.retrieve(self.session, new_user.id_)
-            except HTTPError as error:
-                if error.code == 404:
-                    was_deleted = True
+            except ResourceNotFound:
+                was_deleted = True
 
         except Exception as error:
             self.record_failure(error)

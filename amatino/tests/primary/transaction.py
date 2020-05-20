@@ -4,13 +4,10 @@ Account Test Module
 Author: hugh@amatino.io
 """
 from datetime import datetime
-from amatino import Transaction
-from amatino import Side
-from amatino import Entry
+from amatino import Side, Entry, Transaction
 from decimal import Decimal
 from amatino.tests.primary.account import AccountTest
-from amatino import AMType
-from urllib.error import HTTPError
+from amatino import AMType, ResourceNotFound
 from typing import Optional
 
 NAME = 'Create, retrieve, update, delete a Transaction'
@@ -106,9 +103,9 @@ class TransactionTest(AccountTest):
                 self.asset.denomination
             )
         except Exception as error:
-            if isinstance(error, HTTPError) and error.code == 404:
-                self.record_success()
+            if not isinstance(error, ResourceNotFound):
+                self.record_failure(error)
                 return
-            self.record_failure(error)
 
+        self.record_success()
         return

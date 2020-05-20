@@ -126,7 +126,7 @@ class Entity(SessionDecodable):
         cls: Type[T],
         session: Session,
         entity_id: str
-    ) -> Optional[T]:
+    ) -> T:
 
         if not isinstance(session, Session):
             raise TypeError('session must be of type `Session`')
@@ -145,7 +145,7 @@ class Entity(SessionDecodable):
             debug=False
         )
 
-        return cls.optionally_decode(request.response_data, session)
+        return cls.decode(request.response_data, session)
 
     @classmethod
     def retrieve_list(

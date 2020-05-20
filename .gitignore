@@ -10,9 +10,7 @@ dist/
 amatino/_internal/__pycache__/*
 *.cpython-36.pyc
 test_env.sh
-export_test_dev.sh
 .idea/*
-export_test.sh
 .vscode/
 deploy.sh
-real_test_env.sh
+local_test_env.sh

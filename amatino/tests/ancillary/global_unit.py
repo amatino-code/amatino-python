@@ -4,7 +4,7 @@ Global Unit Test Module
 Author: hugh@amatino.io
 """
 from amatino.tests.ancillary.session import SessionTest
-from amatino import GlobalUnit
+from amatino import GlobalUnit, GlobalUnitConstants
 
 USD_UNIT_ID = 5
 
@@ -34,6 +34,12 @@ class GlobalUnitTest(SessionTest):
         if not isinstance(usd.name, str):
             self.record_failure('Unexpected name type ' + str(type(usd.name)))
             return
+
+        assert usd == GlobalUnitConstants.USD
+
+        for unit in GlobalUnitConstants.PRIORITY_1_UNITS:
+            assert isinstance(unit.code, str)
+            assert len(unit.code) == 3
 
         self.record_success()
         return

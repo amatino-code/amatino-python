@@ -3,6 +3,7 @@ from amatino.entity import Entity
 from amatino.account import Account
 from amatino.am_type import AMType
 from amatino.global_unit import GlobalUnit
+from amatino.global_unit import GlobalUnitConstants
 from amatino.custom_unit import CustomUnit
 from amatino.transaction import Transaction
 from amatino.side import Side
@@ -21,3 +22,5 @@ from amatino.tree import Tree
 from amatino.state import State
 from amatino.user_list import UserList
 from amatino.tx_version_list import TransactionVersionList
+from amatino.amatino_error import AmatinoError
+from amatino.internal.errors.not_found import ResourceNotFound
