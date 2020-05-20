@@ -17,6 +17,8 @@ from amatino.internal.url_parameters import UrlParameters
 from amatino.internal.request_headers import RequestHeaders
 from amatino.internal.http_method import HTTPMethod
 from typing import Optional
+from amatino.internal.immutable import Immutable
+from amatino.internal.errors.not_found import ResourceNotFound
 
 
 class ApiRequest:
@@ -54,7 +56,7 @@ class ApiRequest:
         if url_parameters is not None:
             assert isinstance(url_parameters, UrlParameters)
 
-        if debug is True or '--debug' in sys.argv[1:]:
+        if debug is True or '--amatino-debug' in sys.argv[1:]:
             url = self._DEBUG_ENDPOINT
         else:
             url = self._ENDPOINT
@@ -74,9 +76,12 @@ class ApiRequest:
         try:
             self._response = urlopen(request, timeout=self._TIMEOUT)
         except HTTPError as error:
-            # Insert error handling
+            if error.code == 404:
+                raise ResourceNotFound
             raise error
 
-        self.response_data = loads(self._response.read().decode('utf-8'))
+        self._response_data = loads(self._response.read().decode('utf-8'))
 
         return
+
+    response_data = Immutable(lambda s: s._response_data)
