@@ -10,7 +10,7 @@ from codecs import open
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as readme_file:
+with open(path.join(here, 'readme.md'), encoding='utf-8') as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
 with open(path.join(here, 'VERSION'), encoding='utf-8') as version_file:
