@@ -15,3 +15,4 @@ test_env.sh
 deploy.sh
 local_test_env.sh
 pyvenv.cfg
+*.pyc
