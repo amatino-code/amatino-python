@@ -28,7 +28,7 @@ from typing import Type
 from typing import Dict
 from typing import Any
 from typing import List
-from collections import Sequence
+from collections.abc import Sequence
 from amatino.denominated import Denominated
 
 T = TypeVar('T', bound='Ledger')

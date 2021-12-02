@@ -14,3 +14,4 @@ test_env.sh
 .vscode/
 deploy.sh
 local_test_env.sh
+pyvenv.cfg

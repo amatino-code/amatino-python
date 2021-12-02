@@ -24,7 +24,7 @@ from amatino.internal.am_amount import AmatinoAmount
 from decimal import Decimal
 from typing import TypeVar, Optional, Type, Any, List, Dict
 from amatino.internal.immutable import Immutable
-from collections import Sequence
+from collections.abc import Sequence
 
 T = TypeVar('T', bound='Transaction')
 

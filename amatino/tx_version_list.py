@@ -13,7 +13,7 @@ from amatino.internal.immutable import Immutable
 from amatino.api_error import ApiError
 from amatino.missing_key import MissingKey
 from typing import TypeVar, Type, List, Any
-from collections import Sequence
+from collections.abc import Sequence
 
 T = TypeVar('T', bound='TransactionVersionList')
 
